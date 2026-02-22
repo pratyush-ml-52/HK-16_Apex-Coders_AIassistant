@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Coders - Smart Agriculture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --secondary: #1b4332;
+            --dark-bg: #0b1215;
+            --glass-bg: rgba(20, 30, 25, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--dark-bg); color: var(--text-main); overflow-x: hidden; }
+        .bg-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.5)),
+                        url('https://i.pinimg.com/originals/24/a6/81/24a681980051d2a9a9caff2850b3cf78.jpg');
+            background-size: cover; background-position: center; z-index: -1;
+        }
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 50px; background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border);
+            position: fixed; width: 100%; top: 0; z-index: 1000;
+        }
+        .logo { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 10px; color: white; cursor: pointer; }
+        .logo span { color: var(--primary); }
+        .auth-buttons { display: flex; gap: 15px; align-items: center; }
+        .btn-login, .btn-signup { padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-login { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: white; }
+        .btn-signup { background: var(--primary); border: none; color: #002200; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .user-nav { display: none; align-items: center; gap: 15px; }
+        .lang-select {
+            background: rgba(26, 26, 26, 0.9); color: white; border: 1px solid var(--glass-border);
+            padding: 10px 15px; border-radius: 8px; cursor: pointer; outline: none;
+            font-size: 0.95rem; font-weight: 500; transition: all 0.3s ease;
+        }
+        .lang-select:hover { background: rgba(40, 40, 40, 0.95); border-color: var(--primary); }
+        .lang-select option { background-color: #1a1a1a; color: #ffffff; padding: 12px; font-size: 0.95rem; }
+        .user-name-badge {
+            background: rgba(0, 255, 136, 0.1); border: 1px solid var(--primary);
+            padding: 8px 16px; border-radius: 8px; color: var(--primary); font-weight: 600; font-size: 0.9rem;
+        }
+        .hamburger-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 10px; z-index: 1001; }
+        .hamburger-menu span { width: 25px; height: 3px; background-color: var(--primary); border-radius: 2px; transition: 0.3s; }
+        .hamburger-menu.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger-menu.active span:nth-child(2) { opacity: 0; }
+        .hamburger-menu.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        .sidebar-menu {
+            position: fixed; top: 0; right: -300px; width: 300px; height: 100vh;
+            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border); padding: 80px 30px 30px;
+            z-index: 999; transition: right 0.3s ease; overflow-y: auto;
+        }
+        .sidebar-menu.active { right: 0; }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 998; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .sidebar-menu-item {
+            padding: 15px 20px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border); border-radius: 10px; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 10px; color: white; font-weight: 500;
+        }
+        .sidebar-menu-item:hover { background: rgba(0, 255, 136, 0.1); border-color: var(--primary); transform: translateX(-5px); }
+        .contact-info { margin-top: 30px; padding: 20px; background: rgba(0, 255, 136, 0.05); border: 1px solid var(--primary); border-radius: 10px; }
+        .contact-info h4 { color: var(--primary); margin-bottom: 15px; font-size: 1rem; }
+        .contact-info a { color: white; text-decoration: none; font-weight: 600; font-size: 1rem; display: block; margin-bottom: 10px; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; transition: 0.3s; }
+        .contact-info a:hover { color: var(--primary); background: rgba(0, 255, 136, 0.1); transform: translateX(5px); }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(0, 255, 136, 0.08); border: 1.5px solid rgba(0, 255, 136, 0.35);
+            color: var(--primary); padding: 10px 20px; border-radius: 10px;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
+            font-family: 'Outfit', sans-serif; text-decoration: none; user-select: none;
+        }
+        .back-btn:hover { background: rgba(0, 255, 136, 0.18); border-color: var(--primary); transform: translateX(-4px); box-shadow: 0 0 16px rgba(0, 255, 136, 0.25); }
+        .back-btn:active { transform: translateX(-2px) scale(0.98); }
+        .dashboard-back-bar { display: flex; align-items: center; margin-bottom: 20px; }
+        .about-back-bar { display: flex; align-items: center; margin-bottom: 25px; }
+        .market-modal-back-row { display: flex; align-items: center; padding: 15px 30px 0 30px; }
+        .modal-back-btn-wrap { margin-bottom: 20px; }
+        .about-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px);
+            z-index: 3000; display: none; justify-content: center; align-items: center;
+            padding: 20px; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .about-page.active { display: flex; opacity: 1; }
+        .about-content {
+            max-width: 800px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(27, 67, 50, 0.2) 100%);
+            border: 2px solid var(--primary); border-radius: 20px; padding: 50px; position: relative;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .about-close { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: var(--primary); cursor: pointer; transition: 0.3s; font-weight: 300; }
+        .about-close:hover { transform: rotate(90deg); color: white; }
+        .about-content h2 { color: var(--primary); font-size: 2.5rem; margin-bottom: 30px; text-align: center; }
+        .about-content p { color: #e0e0e0; font-size: 1.2rem; line-height: 1.8; text-align: justify; }
+        .dashboard-container { display: none; padding: 120px 50px 50px; max-width: 1400px; margin: 0 auto; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .big-number { font-size: 3rem; font-weight: 700; color: white; margin: 10px 0; }
+        .market-card-inner { display: flex; flex-direction: column; gap: 10px; }
+        .market-price-btn {
+            margin-top: 10px; background: linear-gradient(135deg, var(--primary), #00cc70);
+            color: #002200; border: none; padding: 12px 20px; border-radius: 10px;
+            font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .market-price-btn:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
+        .market-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px);
+            z-index: 4000; display: none; justify-content: center; align-items: center; padding: 20px;
+        }
+        .market-modal-overlay.active { display: flex; }
+        .market-modal-box {
+            width: 100%; max-width: 520px;
+            background: linear-gradient(135deg, rgba(0,20,10,0.98) 0%, rgba(10,30,20,0.98) 100%);
+            border: 2px solid var(--primary); border-radius: 24px; overflow: hidden;
+            animation: slideIn 0.4s ease; box-shadow: 0 0 60px rgba(0, 255, 136, 0.15);
+        }
+        .market-modal-header {
+            background: rgba(0, 255, 136, 0.08); padding: 25px 30px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .market-modal-header h2 { color: var(--primary); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        .market-modal-close { background: none; border: none; color: var(--primary); font-size: 2rem; cursor: pointer; transition: 0.3s; padding: 0 5px; }
+        .market-modal-close:hover { transform: rotate(90deg); color: white; }
+        .market-modal-body { padding: 20px 30px 30px; }
+        .market-search-wrap { display: flex; gap: 10px; margin-bottom: 25px; }
+        .market-crop-input {
+            flex: 1; background: rgba(0, 0, 0, 0.4); border: 1.5px solid var(--glass-border);
+            padding: 14px 18px; border-radius: 12px; color: white; font-size: 1rem;
+            outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif;
+        }
+        .market-crop-input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.6); }
+        .market-crop-input::placeholder { color: #555; }
+        .market-search-btn {
+            background: var(--primary); color: #002200; border: none; padding: 14px 22px;
+            border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; white-space: nowrap;
+        }
+        .market-search-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+        .market-quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
+        .market-tag { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.25); color: #aaa; padding: 7px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.3s; }
+        .market-tag:hover { background: rgba(0,255,136,0.18); border-color: var(--primary); color: white; }
+        .market-result-section { display: none; }
+        .market-result-section.active { display: block; }
+        .market-result-card { background: rgba(0,255,136,0.06); border: 1.5px solid rgba(0,255,136,0.3); border-radius: 16px; padding: 24px; animation: slideIn 0.3s ease; }
+        .market-crop-name { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 5px; }
+        .market-crop-category { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+        .market-price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .market-price-item { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; border-left: 3px solid var(--primary); }
+        .market-price-item.highlight { border-left-color: #00ff88; background: rgba(0,255,136,0.08); }
+        .market-price-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .market-price-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .market-price-value.white { color: white; }
+        .market-trend-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-top: 15px; }
+        .market-trend-badge.up { background: rgba(0,255,136,0.15); color: var(--primary); border: 1px solid rgba(0,255,136,0.3); }
+        .market-trend-badge.down { background: rgba(255,80,80,0.15); color: #ff6b6b; border: 1px solid rgba(255,80,80,0.3); }
+        .market-not-found { text-align: center; padding: 30px 20px; color: #888; font-size: 1rem; }
+        .market-not-found span { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+        .loss-prediction-section { margin-top: 35px; }
+        .loss-section-title { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .loss-section-title span.badge { background: rgba(255, 140, 0, 0.2); border: 1px solid rgba(255, 140, 0, 0.5); color: #ffa500; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+        .loss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .loss-input-card { background: linear-gradient(135deg, rgba(255,140,0,0.08) 0%, rgba(30,15,0,0.3) 100%); border: 1px solid rgba(255,140,0,0.3); border-radius: 20px; padding: 30px; }
+        .loss-input-card h3 { color: #ffa500; margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .loss-input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+        .loss-input-group label { color: #bbb; font-size: 0.9rem; }
+        .loss-input-group input, .loss-input-group select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,140,0,0.2); padding: 12px 15px; border-radius: 10px; color: white; font-size: 0.95rem; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; }
+        .loss-input-group input:focus, .loss-input-group select:focus { border-color: #ffa500; }
+        .loss-input-group select option { background: #1a1a1a; }
+        .loss-predict-btn { width: 100%; background: linear-gradient(135deg, #ffa500, #ff6b00); color: #1a0800; border: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .loss-predict-btn:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(255,165,0,0.4); }
+        .loss-result-card { background: linear-gradient(135deg, rgba(255,80,80,0.08) 0%, rgba(30,0,0,0.3) 100%); border: 1px solid rgba(255,80,80,0.3); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .loss-result-card h3 { color: #ff6b6b; margin-bottom: 5px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .loss-meter-wrap { margin: 5px 0; }
+        .loss-meter-label { display: flex; justify-content: space-between; color: #aaa; font-size: 0.85rem; margin-bottom: 8px; }
+        .loss-meter-bar { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+        .loss-meter-fill { height: 100%; border-radius: 6px; width: 0%; transition: width 1s ease; background: linear-gradient(90deg, #ffa500, #ff4444); }
+        .loss-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .loss-stat-item { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 14px; border-left: 3px solid #ffa500; }
+        .loss-stat-label { color: #888; font-size: 0.8rem; margin-bottom: 4px; }
+        .loss-stat-value { color: white; font-size: 1.1rem; font-weight: 700; }
+        .loss-tips { background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; padding: 15px; }
+        .loss-tips h4 { color: var(--primary); font-size: 0.9rem; margin-bottom: 10px; }
+        .loss-tip-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; color: #ccc; line-height: 1.4; }
+        .loss-tip-item:last-child { margin-bottom: 0; }
+        .loss-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 200px; color: #555; text-align: center; gap: 12px; }
+        .loss-placeholder span { font-size: 3rem; }
+        .loss-placeholder p { font-size: 0.95rem; line-height: 1.5; }
+        .emi-card { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(27, 67, 50, 0.2) 100%); }
+        .emi-title { font-size: 1.8rem; margin-bottom: 25px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .emi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .emi-inputs { display: flex; flex-direction: column; gap: 20px; }
+        .emi-input-group { display: flex; flex-direction: column; gap: 8px; }
+        .emi-input-group label { color: #ccc; font-size: 0.95rem; font-weight: 500; }
+        .emi-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); padding: 12px 15px; border-radius: 10px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+        .emi-input-group input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.5); }
+        .emi-input-group input::-webkit-outer-spin-button, .emi-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .emi-input-group input[type=number] { -moz-appearance: textfield; }
+        .emi-calculate-btn { background: var(--primary); color: #002200; padding: 15px; border: none; border-radius: 10px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .emi-calculate-btn:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(0, 255, 136, 0.4); }
+        .emi-results { display: flex; flex-direction: column; gap: 20px; }
+        .emi-result-card { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; transition: 0.3s; }
+        .emi-result-card:hover { border-color: var(--primary); background: rgba(0, 0, 0, 0.4); }
+        .emi-result-label { color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        .emi-result-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .emi-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .emi-breakdown-item { background: rgba(0, 0, 0, 0.2); padding: 12px; border-radius: 10px; border-left: 3px solid var(--primary); }
+        .emi-breakdown-label { color: #999; font-size: 0.85rem; }
+        .emi-breakdown-value { color: white; font-size: 1.2rem; font-weight: 600; margin-top: 3px; }
+
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: #111; border: 1px solid var(--glass-border); padding: 40px; width: 420px; border-radius: 20px; position: relative; max-height: 92vh; overflow-y: auto; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; color: #888; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: var(--primary); }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #bbb; font-size: 0.9rem; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; background: #222; border: 1px solid #333; border-radius: 8px; color: white; outline: none; font-size: 1rem; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary); }
+        .submit-btn { width: 100%; background: var(--primary); color: #002200; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .submit-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
+        .forgot-password-link { display: block; text-align: center; margin-top: 16px; color: #888; font-size: 0.9rem; cursor: pointer; transition: color 0.3s; text-decoration: none; }
+        .forgot-password-link:hover { color: var(--primary); }
+        .forgot-password-link span { color: var(--primary); font-weight: 600; }
+
+        /* ──── GUEST USER BUTTON STYLES ──── */
+        .guest-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0, 255, 136, 0.07);
+            border: 1.5px solid rgba(0, 255, 136, 0.3);
+            color: #ffffff;
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.97rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.01em;
+            margin-bottom: 4px;
+        }
+        .guest-btn:hover {
+            background: rgba(0, 255, 136, 0.16);
+            border-color: var(--primary);
+            box-shadow: 0 0 22px rgba(0, 255, 136, 0.18);
+            transform: translateY(-1px);
+        }
+        .guest-btn:active { transform: translateY(0); }
+        .guest-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1.5px solid rgba(0, 255, 136, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .guest-badge {
+            font-size: 0.72rem;
+            color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            margin-left: auto;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 20px 0 18px;
+            color: #484848;
+            font-size: 0.83rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.09);
+        }
+        /* ─────────────────────────── */
+
+        .chat-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .chat-modal.active { display: flex; opacity: 1; }
+        .chat-container { width: 100%; max-width: 900px; height: 90vh; background: linear-gradient(135deg, rgba(0, 255, 136, 0.05) 0%, rgba(27, 67, 50, 0.1) 100%); border: 2px solid var(--primary); border-radius: 20px; display: flex; flex-direction: column; position: relative; animation: slideIn 0.5s ease; overflow: hidden; }
+        .chat-header { background: rgba(0, 0, 0, 0.5); padding: 20px 30px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h2 { color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .chat-close { font-size: 2rem; color: var(--primary); cursor: pointer; transition: 0.3s; background: none; border: none; padding: 5px 15px; }
+        .chat-close:hover { transform: rotate(90deg); color: white; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        .message { display: flex; gap: 12px; animation: messageSlide 0.3s ease; }
+        @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { flex-direction: row-reverse; }
+        .message-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .message.bot .message-avatar { background: linear-gradient(135deg, var(--primary), #00cc70); color: #002200; }
+        .message.user .message-avatar { background: rgba(255, 255, 255, 0.1); border: 2px solid var(--primary); color: var(--primary); }
+        .message-content { max-width: 70%; padding: 15px 20px; border-radius: 15px; line-height: 1.6; }
+        .message.bot .message-content { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #e0e0e0; }
+        .message.user .message-content { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: white; }
+        .message-time { font-size: 0.75rem; color: #888; margin-top: 5px; }
+        .chat-input-container { padding: 20px 30px; background: rgba(0, 0, 0, 0.5); border-top: 1px solid var(--glass-border); display: flex; gap: 15px; align-items: center; }
+        .chat-input { flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); padding: 15px 20px; border-radius: 25px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+        .chat-input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.5); }
+        .chat-input::placeholder { color: #666; }
+        .chat-send-btn { background: var(--primary); color: #002200; padding: 15px 30px; border: none; border-radius: 25px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .chat-send-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(0, 255, 136, 0.4); }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .typing-indicator { display: none; gap: 12px; padding: 15px 20px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 15px; max-width: fit-content; }
+        .typing-indicator.active { display: flex; }
+        .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: typingBounce 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+        .welcome-message { text-align: center; padding: 40px 20px; color: #888; }
+        .welcome-message h3 { color: var(--primary); margin-bottom: 15px; font-size: 1.5rem; }
+        .welcome-message p { font-size: 1rem; line-height: 1.6; }
+        .suggested-questions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; justify-content: center; }
+        .suggested-question { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: 0.3s; color: #ccc; font-size: 0.9rem; }
+        .suggested-question:hover { background: rgba(0, 255, 136, 0.2); border-color: var(--primary); transform: translateY(-2px); }
+
+        /* TOAST NOTIFICATION */
+        .toast-notify {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,20,10,0.95); border: 1.5px solid rgba(0,255,136,0.45);
+            color: #00ff88; padding: 14px 28px; border-radius: 12px;
+            font-weight: 600; font-size: 0.97rem; z-index: 9999;
+            backdrop-filter: blur(12px); box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            transition: opacity 0.4s ease; display: flex; align-items: center; gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; flex-wrap: wrap; }
+            .logo { font-size: 1.4rem; }
+            .auth-buttons { gap: 10px; }
+            .user-nav { flex-wrap: wrap; gap: 10px; }
+            .modal-box { width: 90%; padding: 30px 20px; }
+            .emi-grid { grid-template-columns: 1fr; }
+            .loss-grid { grid-template-columns: 1fr; }
+            .dashboard-container { padding: 120px 20px 50px; }
+            .sidebar-menu { width: 250px; right: -250px; }
+            .about-content { padding: 30px 25px; }
+            .about-content h2 { font-size: 2rem; }
+            .about-content p { font-size: 1rem; }
+            .chat-container { height: 95vh; }
+            .chat-header { padding: 15px 20px; }
+            .chat-messages { padding: 20px; }
+            .message-content { max-width: 85%; }
+            .chat-input-container { padding: 15px 20px; flex-wrap: wrap; }
+            .chat-send-btn { padding: 12px 25px; }
+            .market-modal-box { width: 95%; }
+            .market-price-grid { grid-template-columns: 1fr 1fr; }
+            .back-btn { padding: 8px 14px; font-size: 0.88rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-fixed"></div>
+
+    <nav>
+        <div class="logo">🌿 Apex<span>Coders</span></div>
+        <select class="lang-select" id="langSelector" onchange="changeLanguage()">
+            <option value="en">🌐 English</option>
+            <option value="hi">🌐 हिन्दी (Hindi)</option>
+            <option value="or">🌐 ଓଡ଼ିଆ (Odia)</option>
+            <option value="bn">🌐 বাংলা (Bengali)</option>
+            <option value="te">🌐 తెలుగు (Telugu)</option>
+            <option value="mr">🌐 मराठी (Marathi)</option>
+            <option value="ta">🌐 தமிழ் (Tamil)</option>
+            <option value="gu">🌐 ગુજરાતી (Gujarati)</option>
+            <option value="kn">🌐 ಕನ್ನಡ (Kannada)</option>
+            <option value="ml">🌐 മലയാളം (Malayalam)</option>
+        </select>
+        <div class="auth-buttons" id="authBtns">
+            <button class="btn-login" id="navLoginBtn" onclick="openModal('loginModal')">Log In</button>
+            <button class="btn-signup" id="navSignupBtn" onclick="openModal('signupModal')">Sign Up</button>
+        </div>
+        <div class="user-nav" id="userNav">
+            <div class="user-name-badge">👤 <span id="usernameDisplay">Farmer</span></div>
+            <div class="hamburger-menu" id="hamburgerMenu" onclick="toggleSidebar()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-menu-item" onclick="navigateHome()">🏠 Home</div>
+        <div class="sidebar-menu-item" onclick="navigateAbout()">ℹ️ About</div>
+        <div class="sidebar-menu-item" onclick="navigateChatAI()">🤖 Chat with AI</div>
+        <div class="contact-info">
+            <h4>📞 Contact Us</h4>
+            <a href="tel:+919124966134">+91 9124966134</a>
+            <a href="tel:+917853009211">+91 7853009211</a>
+            <a href="tel:+918249933360">+91 8249933602</a>
+            <a href="tel:+917004390132">+91 7004390132</a>
+        </div>
+        <div class="sidebar-menu-item" onclick="logout()" style="margin-top: 20px; background: rgba(255, 50, 50, 0.2); border-color: rgba(255, 50, 50, 0.4); color: #ff6b6b;">
+            🚪 Logout
+        </div>
+    </div>
+
+    <div class="about-page" id="aboutPage">
+        <div class="about-content">
+            <span class="about-close" onclick="closeAbout()">×</span>
+            <div class="about-back-bar">
+                <button class="back-btn" onclick="closeAbout()">← Back</button>
+            </div>
+            <h2>About Apex Coders</h2>
+            <p>Every year, farmers lose a huge portion of their hard work to spoilage and poor market timing. We're building an AI-powered companion that takes the guesswork out of farming. It doesn't just look at the soil; it looks at the big picture—predicting weather, market prices, and the best time to harvest. Our goal is to make sure that no crop goes to waste and that farmers finally get the payday they deserve for their hard labor.</p>
+        </div>
+    </div>
+
+    <section class="hero-section" id="heroSection" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+        <h1 class="hero-title" id="heroTitle" style="font-size: 4rem; line-height: 1.2;">Cultivating the Future<br><span style="color: var(--primary);">with Technology</span></h1>
+        <p class="hero-subtitle" id="heroSubtitle" style="max-width: 600px; margin: 20px 0; color: #ccc; font-size: 1.2rem;">Monitor crops and boost yields with Apex Coders.</p>
+        <button class="btn-signup" id="getStartedBtn" onclick="openModal('signupModal')" style="padding: 15px 40px; font-size: 1.1rem;">Get Started Free</button>
+    </section>
+
+    <section class="dashboard-container" id="dashboardSection">
+        <div class="dashboard-back-bar">
+            <button class="back-btn" onclick="goBackFromDashboard()">← Back to Home</button>
+        </div>
+        <h2 id="dashTitle" style="margin-bottom: 20px; font-size: 2rem;">Farm Overview</h2>
+        <div class="grid-container">
+            <div class="card">
+                <h3 id="cardSoil">Soil Moisture</h3>
+                <div class="big-number">64%</div>
+                <p id="cardStatus">Status: Optimal 🟢</p>
+            </div>
+            <div class="card">
+                <h3 id="cardWeather">Current Weather</h3>
+                <div class="big-number">28°C</div>
+                <p id="weatherDetail">Sunny • 45%</p>
+            </div>
+            <div class="card">
+                <div class="market-card-inner">
+                    <h3 id="cardMarket">Market Price</h3>
+                    <div class="big-number">₹2,400</div>
+                    <p id="marketTrend">▲ 2.4% Increase</p>
+                    <button class="market-price-btn" onclick="openMarketModal()">📊 Check Crop Prices</button>
+                </div>
+            </div>
+            <div class="card emi-card">
+                <h3 class="emi-title"><span>💰</span><span id="emiTitle">Farm Loan EMI Calculator</span></h3>
+                <div class="emi-grid">
+                    <div class="emi-inputs">
+                        <div class="emi-input-group">
+                            <label id="lblLoanAmount">Loan Amount (₹)</label>
+                            <input type="number" id="loanAmount" placeholder="Enter loan amount" min="1000" step="1000">
+                        </div>
+                        <div class="emi-input-group">
+                            <label id="lblInterestRate">Interest Rate (% per year)</label>
+                            <input type="number" id="interestRate" placeholder="Enter interest rate" min="0.1" step="0.1" max="50">
+                        </div>
+                        <div class="emi-input-group">
+                            <label id="lblLoanTenure">Loan Tenure (Years)</label>
+                            <input type="number" id="loanTenure" placeholder="Enter tenure in years" min="1" max="30">
+                        </div>
+                        <button class="emi-calculate-btn" id="calculateBtn" onclick="calculateEMI()">Calculate EMI</button>
+                    </div>
+                    <div class="emi-results" id="emiResults" style="opacity: 0.3;">
+                        <div class="emi-result-card">
+                            <div class="emi-result-label" id="lblMonthlyEMI">Monthly EMI</div>
+                            <div class="emi-result-value" id="monthlyEMI">₹0</div>
+                        </div>
+                        <div class="emi-breakdown">
+                            <div class="emi-breakdown-item"><div class="emi-breakdown-label" id="lblTotalAmount">Total Amount Payable</div><div class="emi-breakdown-value" id="totalAmount">₹0</div></div>
+                            <div class="emi-breakdown-item"><div class="emi-breakdown-label" id="lblTotalInterest">Total Interest</div><div class="emi-breakdown-value" id="totalInterest">₹0</div></div>
+                            <div class="emi-breakdown-item"><div class="emi-breakdown-label" id="lblPrincipal">Principal Amount</div><div class="emi-breakdown-value" id="principalAmount">₹0</div></div>
+                            <div class="emi-breakdown-item"><div class="emi-breakdown-label" id="lblInterestPercent">Interest %</div><div class="emi-breakdown-value" id="interestPercent">0%</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loss-prediction-section">
+            <h2 class="loss-section-title">
+                <span id="lossSectionIcon">📉</span> <span id="lossSectionTitle">Crop Loss Prediction</span>
+                <span class="badge" id="lossBadge">AI Powered</span>
+            </h2>
+            <div class="loss-grid">
+                <div class="loss-input-card">
+                    <h3 id="lossInputHeading">🌾 Enter Farm Details</h3>
+                    <div class="loss-input-group">
+                        <label id="lblCropType">Crop Type</label>
+                        <select id="lossCropType">
+                            <option value="" id="optSelectCrop">Select crop...</option>
+                            <option value="rice" id="optRice">Rice (Paddy)</option>
+                            <option value="wheat" id="optWheat">Wheat</option>
+                            <option value="maize" id="optMaize">Maize (Corn)</option>
+                            <option value="sugarcane" id="optSugarcane">Sugarcane</option>
+                            <option value="cotton" id="optCotton">Cotton</option>
+                            <option value="soybean" id="optSoybean">Soybean</option>
+                            <option value="tomato" id="optTomato">Tomato</option>
+                            <option value="potato" id="optPotato">Potato</option>
+                            <option value="onion" id="optOnion">Onion</option>
+                            <option value="groundnut" id="optGroundnut">Groundnut</option>
+                        </select>
+                    </div>
+                    <div class="loss-input-group">
+                        <label id="lblArea">Total Area (in Acres)</label>
+                        <input type="number" id="lossArea" placeholder="e.g. 5" min="0.1" step="0.1">
+                    </div>
+                    <div class="loss-input-group">
+                        <label id="lblExpYield">Expected Yield (Quintals/Acre)</label>
+                        <input type="number" id="lossExpYield" placeholder="e.g. 20" min="1">
+                    </div>
+                    <div class="loss-input-group">
+                        <label id="lblWeatherCond">Current Weather Condition</label>
+                        <select id="lossWeather">
+                            <option value="" id="optSelectWeather">Select condition...</option>
+                            <option value="normal" id="optNormal">Normal / Sunny</option>
+                            <option value="drought" id="optDrought">Drought / Dry Spell</option>
+                            <option value="flood" id="optFlood">Excess Rain / Flood</option>
+                            <option value="pest" id="optPest">Pest / Disease Attack</option>
+                            <option value="storm" id="optStorm">Storm / Heavy Wind</option>
+                            <option value="frost" id="optFrost">Frost / Cold Wave</option>
+                        </select>
+                    </div>
+                    <div class="loss-input-group">
+                        <label id="lblGrowthStage">Crop Growth Stage</label>
+                        <select id="lossStage">
+                            <option value="" id="optSelectStage">Select stage...</option>
+                            <option value="sowing" id="optSowing">Sowing / Germination</option>
+                            <option value="vegetative" id="optVegetative">Vegetative Growth</option>
+                            <option value="flowering" id="optFlowering">Flowering</option>
+                            <option value="grain" id="optGrain">Grain Filling / Fruiting</option>
+                            <option value="harvest" id="optHarvest">Near Harvest</option>
+                        </select>
+                    </div>
+                    <button class="loss-predict-btn" id="lossPredictBtn" onclick="predictLoss()">🔍 Predict Crop Loss</button>
+                </div>
+                <div class="loss-result-card" id="lossResultCard">
+                    <div class="loss-placeholder" id="lossPlaceholder">
+                        <span>🌱</span>
+                        <p id="lossPlaceholderText">Fill in your farm details on the left and click <strong>Predict</strong> to see your estimated crop loss analysis.</p>
+                    </div>
+                    <div id="lossResultContent" style="display:none;">
+                        <h3 id="lossReportTitle">📊 Loss Analysis Report</h3>
+                        <div class="loss-meter-wrap">
+                            <div class="loss-meter-label">
+                                <span id="lossRiskLabel">Loss Risk Level</span>
+                                <span id="lossPercText">0%</span>
+                            </div>
+                            <div class="loss-meter-bar"><div class="loss-meter-fill" id="lossMeterFill"></div></div>
+                        </div>
+                        <div class="loss-stat-grid">
+                            <div class="loss-stat-item"><div class="loss-stat-label" id="lblEstLoss">Estimated Loss</div><div class="loss-stat-value" id="lossEstLoss">—</div></div>
+                            <div class="loss-stat-item"><div class="loss-stat-label" id="lblExpOut">Expected Yield</div><div class="loss-stat-value" id="lossExpOut">—</div></div>
+                            <div class="loss-stat-item"><div class="loss-stat-label" id="lblActOut">Actual Yield (Est.)</div><div class="loss-stat-value" id="lossActOut">—</div></div>
+                            <div class="loss-stat-item"><div class="loss-stat-label" id="lblFinImpact">Financial Impact</div><div class="loss-stat-value" id="lossFinImpact">—</div></div>
+                        </div>
+                        <div class="loss-tips" id="lossTipsBox">
+                            <h4 id="lossRecommTitle">💡 Recommendations</h4>
+                            <div id="lossTipsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="market-modal-overlay" id="marketModal">
+        <div class="market-modal-box">
+            <div class="market-modal-header">
+                <h2>📊 Live Crop Price Checker</h2>
+                <button class="market-modal-close" onclick="closeMarketModal()">×</button>
+            </div>
+            <div class="market-modal-back-row">
+                <button class="back-btn" onclick="closeMarketModal()">← Back</button>
+            </div>
+            <div class="market-modal-body">
+                <div class="market-search-wrap">
+                    <input type="text" class="market-crop-input" id="cropSearchInput" placeholder="Type crop name (e.g. Rice, Wheat...)" onkeypress="handleMarketKeyPress(event)">
+                    <button class="market-search-btn" onclick="searchCropPrice()">Search</button>
+                </div>
+                <div class="market-quick-tags">
+                    <div class="market-tag" onclick="quickSearch('Rice')">🌾 Rice</div>
+                    <div class="market-tag" onclick="quickSearch('Wheat')">🌿 Wheat</div>
+                    <div class="market-tag" onclick="quickSearch('Tomato')">🍅 Tomato</div>
+                    <div class="market-tag" onclick="quickSearch('Onion')">🧅 Onion</div>
+                    <div class="market-tag" onclick="quickSearch('Potato')">🥔 Potato</div>
+                    <div class="market-tag" onclick="quickSearch('Cotton')">🌸 Cotton</div>
+                    <div class="market-tag" onclick="quickSearch('Maize')">🌽 Maize</div>
+                    <div class="market-tag" onclick="quickSearch('Soybean')">🫘 Soybean</div>
+                </div>
+                <div class="market-result-section" id="marketResultSection">
+                    <div id="marketResultInner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SIGNUP MODAL ===== -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal('signupModal')">×</span>
+            <div class="modal-back-btn-wrap">
+                <button class="back-btn" onclick="closeModal('signupModal')">← Back</button>
+            </div>
+            <h2 id="signupTitle" style="margin-bottom: 22px; color: var(--primary);">Join Apex Coders</h2>
+
+            <!-- GUEST USER BUTTON -->
+            <button class="guest-btn" onclick="handleGuestLogin()">
+                <div class="guest-icon">👤</div>
+                Continue as Guest User
+                <span class="guest-badge">NO SIGNUP</span>
+            </button>
+
+            <div class="auth-divider">or sign up with username</div>
+
+            <form onsubmit="handleSignup(event)">
+                <div class="input-group"><label id="lblFullName">Full Name</label><input type="text" required></div>
+                <div class="input-group"><label id="lblState">State</label><select id="signupState" onchange="loadDistricts()"><option value="">Select State</option></select></div>
+                <div class="input-group"><label id="lblDistrict">District</label><select id="signupDistrict"><option value="">Select District</option></select></div>
+                <div class="input-group"><label id="lblNewUser">Username</label><input type="text" id="signupUser" required></div>
+                <div class="input-group"><label id="lblNewPass">Password</label><input type="password" id="signupPass" required></div>
+                <button type="submit" class="submit-btn" id="signupSubmit">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== LOGIN MODAL ===== -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal('loginModal')">×</span>
+            <div class="modal-back-btn-wrap">
+                <button class="back-btn" onclick="closeModal('loginModal')">← Back</button>
+            </div>
+            <h2 id="loginTitle" style="margin-bottom: 22px; color: var(--primary);">Farmer Login</h2>
+
+            <!-- GUEST USER BUTTON -->
+            <button class="guest-btn" onclick="handleGuestLogin()">
+                <div class="guest-icon">👤</div>
+                Continue as Guest User
+                <span class="guest-badge">NO SIGNUP</span>
+            </button>
+
+            <div class="auth-divider">or login with username</div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group"><label id="lblUser">Username</label><input type="text" id="loginUser" required></div>
+                <div class="input-group"><label id="lblPass">Password</label><input type="password" id="loginPass" required></div>
+                <button type="submit" class="submit-btn" id="loginSubmit">Access Dashboard</button>
+            </form>
+            <a class="forgot-password-link" onclick="goToHomeForgot()">Forgot your password? <span>Go to Home</span></a>
+        </div>
+    </div>
+
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <button class="back-btn" onclick="closeChatModal()">← Back</button>
+                <h2><span>🤖</span><span>AI Farm Assistant</span></h2>
+                <button class="chat-close" onclick="closeChatModal()">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <h3>👋 Welcome to AI Farm Assistant!</h3>
+                    <p>I'm here to help you with farming queries, crop advice, weather predictions, and market insights.</p>
+                    <div class="suggested-questions">
+                        <div class="suggested-question" onclick="askSuggestedQuestion('What crops should I plant this season?')">What crops should I plant?</div>
+                        <div class="suggested-question" onclick="askSuggestedQuestion('How can I improve my soil quality?')">Improve soil quality?</div>
+                        <div class="suggested-question" onclick="askSuggestedQuestion('Best irrigation practices')">Best irrigation practices</div>
+                        <div class="suggested-question" onclick="askSuggestedQuestion('Market price predictions')">Market price predictions</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about farming..." onkeypress="handleChatKeyPress(event)"/>
+                <button class="chat-send-btn" id="chatSendBtn" onclick="sendMessage()"><span>Send</span><span>📤</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5001/api";
+
+        // ==========================================
+        // GUEST USER LOGIN FUNCTION
+        // ==========================================
+        function handleGuestLogin() {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notify';
+            toast.innerHTML = `<span>👤</span><span>Entering as Guest User...</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 400);
+
+                closeModal('loginModal');
+                closeModal('signupModal');
+                currentUsername = 'Guest';
+                showDashboard('Guest');
+            }, 1200);
+        }
+
+        const cropPriceDB = {
+            "rice":      { name: "Rice (Paddy)", category: "Cereal", min: 1900, max: 2300, msp: 2183, trend: "up",   change: "+2.1%" },
+            "wheat":     { name: "Wheat",         category: "Cereal", min: 2015, max: 2400, msp: 2275, trend: "up",   change: "+1.8%" },
+            "maize":     { name: "Maize (Corn)",   category: "Cereal", min: 1700, max: 2100, msp: 1962, trend: "down", change: "-0.9%" },
+            "sugarcane": { name: "Sugarcane",      category: "Cash Crop", min: 290, max: 360, msp: 315,  trend: "up",   change: "+3.5%" },
+            "cotton":    { name: "Cotton",         category: "Fiber",  min: 6200, max: 7400, msp: 6620, trend: "up",   change: "+4.2%" },
+            "soybean":   { name: "Soybean",        category: "Oilseed",min: 4000, max: 4800, msp: 4600, trend: "down", change: "-1.2%" },
+            "tomato":    { name: "Tomato",         category: "Vegetable", min: 1200, max: 3500, msp: null, trend: "up", change: "+8.4%" },
+            "potato":    { name: "Potato",         category: "Vegetable", min: 600,  max: 1800, msp: null, trend: "down", change: "-2.3%" },
+            "onion":     { name: "Onion",          category: "Vegetable", min: 800,  max: 3200, msp: null, trend: "up",  change: "+12.1%" },
+            "groundnut": { name: "Groundnut",      category: "Oilseed",min: 5100, max: 6200, msp: 5850, trend: "up",   change: "+1.5%" },
+            "arhar":     { name: "Arhar (Tur Dal)",category: "Pulse",  min: 6300, max: 7200, msp: 7000, trend: "up",   change: "+2.8%" },
+            "moong":     { name: "Moong Dal",      category: "Pulse",  min: 7200, max: 8500, msp: 8558, trend: "up",   change: "+3.1%" },
+            "urad":      { name: "Urad Dal",       category: "Pulse",  min: 6200, max: 7400, msp: 6950, trend: "down", change: "-0.7%" },
+            "bajra":     { name: "Bajra (Millet)", category: "Cereal", min: 2150, max: 2600, msp: 2500, trend: "up",   change: "+1.4%" },
+            "jowar":     { name: "Jowar",          category: "Cereal", min: 2800, max: 3300, msp: 3180, trend: "up",   change: "+2.0%" },
+            "barley":    { name: "Barley",         category: "Cereal", min: 1600, max: 2000, msp: 1735, trend: "down", change: "-1.1%" },
+            "mustard":   { name: "Mustard",        category: "Oilseed",min: 4600, max: 5800, msp: 5650, trend: "up",   change: "+3.3%" },
+            "sunflower": { name: "Sunflower",      category: "Oilseed",min: 5300, max: 6400, msp: 6760, trend: "up",   change: "+0.9%" },
+            "chilli":    { name: "Chilli",         category: "Spice",  min: 8000, max: 18000, msp: null, trend: "up",  change: "+5.7%" },
+            "turmeric":  { name: "Turmeric",       category: "Spice",  min: 7000, max: 14000, msp: null, trend: "up",  change: "+9.2%" },
+        };
+
+        function findCrop(query) {
+            const q = query.toLowerCase().trim();
+            for (const key in cropPriceDB) {
+                if (key.includes(q) || q.includes(key) || cropPriceDB[key].name.toLowerCase().includes(q)) return cropPriceDB[key];
+            }
+            return null;
+        }
+
+        function openMarketModal() { document.getElementById('marketModal').classList.add('active'); document.getElementById('cropSearchInput').focus(); }
+        function closeMarketModal() { document.getElementById('marketModal').classList.remove('active'); document.getElementById('marketResultSection').classList.remove('active'); document.getElementById('cropSearchInput').value = ''; }
+        function handleMarketKeyPress(e) { if (e.key === 'Enter') searchCropPrice(); }
+        function quickSearch(name) { document.getElementById('cropSearchInput').value = name; searchCropPrice(); }
+
+        function searchCropPrice() {
+            const query = document.getElementById('cropSearchInput').value.trim();
+            if (!query) return;
+            const crop = findCrop(query);
+            const resultSection = document.getElementById('marketResultSection');
+            const inner = document.getElementById('marketResultInner');
+            resultSection.classList.add('active');
+            if (!crop) { inner.innerHTML = `<div class="market-not-found"><span>🔍</span><p>No price data found for "<strong>${query}</strong>".<br>Try: Rice, Wheat, Tomato, Cotton, Onion...</p></div>`; return; }
+            const mspHtml = crop.msp ? `<div class="market-price-item"><div class="market-price-label">MSP (Govt.)</div><div class="market-price-value white">₹${crop.msp.toLocaleString('en-IN')}</div></div>` : '';
+            inner.innerHTML = `<div class="market-result-card"><div class="market-crop-name">${crop.name}</div><div class="market-crop-category">📁 ${crop.category} &nbsp;|&nbsp; Price per Quintal (100 kg)</div><div class="market-price-grid"><div class="market-price-item highlight"><div class="market-price-label">Market Price (Avg.)</div><div class="market-price-value">₹${Math.round((crop.min + crop.max)/2).toLocaleString('en-IN')}</div></div><div class="market-price-item"><div class="market-price-label">Price Range</div><div class="market-price-value white" style="font-size:1.1rem;">₹${crop.min.toLocaleString('en-IN')} – ₹${crop.max.toLocaleString('en-IN')}</div></div>${mspHtml}<div class="market-price-item"><div class="market-price-label">Today's Change</div><div class="market-price-value ${crop.trend === 'up' ? '' : 'white'}" style="${crop.trend === 'down' ? 'color:#ff6b6b' : ''}">${crop.change}</div></div></div><span class="market-trend-badge ${crop.trend}">${crop.trend === 'up' ? '📈 Upward Trend' : '📉 Downward Trend'}</span></div>`;
+        }
+
+        const lossMatrix = {
+            normal:   { sowing: 2,  vegetative: 5,  flowering: 8,  grain: 10, harvest: 5  },
+            drought:  { sowing: 30, vegetative: 40, flowering: 55, grain: 60, harvest: 25 },
+            flood:    { sowing: 45, vegetative: 35, flowering: 50, grain: 65, harvest: 30 },
+            pest:     { sowing: 20, vegetative: 30, flowering: 45, grain: 50, harvest: 20 },
+            storm:    { sowing: 15, vegetative: 20, flowering: 35, grain: 45, harvest: 55 },
+            frost:    { sowing: 50, vegetative: 40, flowering: 60, grain: 35, harvest: 15 },
+        };
+        const lossTipsAllLang = {
+            en: {
+                normal:  ["Conditions are relatively stable. Monitor regularly.", "Consider crop insurance for future protection.", "Maintain soil health with organic inputs."],
+                drought: ["Install drip irrigation immediately to conserve water.", "Apply mulching to retain soil moisture.", "Contact Krishi Vigyan Kendra for drought-resistant seed varieties.", "Consider crop insurance claim if loss exceeds 33%."],
+                flood:   ["Drain excess water using field channels as soon as possible.", "Apply fungicides to prevent fungal diseases after flooding.", "Replant in severely affected patches.", "Report to block agriculture officer for relief assistance."],
+                pest:    ["Apply recommended pesticides at the right dosage.", "Use pheromone traps for monitoring pest population.", "Practice integrated pest management (IPM).", "Consult local agriculture extension officer for spray schedule."],
+                storm:   ["Provide support to fallen crops using staking.", "Remove damaged plant parts to prevent disease spread.", "Apply foliar nutrients to help plants recover.", "Check for insurance coverage under PM Fasal Bima Yojana."],
+                frost:   ["Cover plants with frost cloth or straw during cold nights.", "Apply smoke or sprinkle water before expected frost.", "Apply potassium-rich fertilizers to improve frost tolerance.", "Early morning irrigation can reduce frost damage."],
+            },
+            hi: {
+                normal:  ["स्थिति अपेक्षाकृत स्थिर है। नियमित रूप से निगरानी रखें।", "भविष्य की सुरक्षा के लिए फसल बीमा पर विचार करें।", "जैविक इनपुट से मिट्टी की सेहत बनाए रखें।"],
+                drought: ["पानी बचाने के लिए तुरंत ड्रिप सिंचाई लगाएं।", "मिट्टी की नमी बनाए रखने के लिए मल्चिंग करें।", "सूखा-प्रतिरोधी बीजों के लिए कृषि विज्ञान केंद्र से संपर्क करें।", "यदि नुकसान 33% से अधिक हो तो फसल बीमा दावा करें।"],
+                flood:   ["जितनी जल्दी हो सके नालियों से अतिरिक्त पानी निकालें।", "बाढ़ के बाद फंगल रोगों से बचाव के लिए फफूंदनाशक लगाएं।", "बुरी तरह प्रभावित हिस्सों में दोबारा पौधे लगाएं।", "राहत सहायता के लिए खंड कृषि अधिकारी को सूचित करें।"],
+                pest:    ["सही मात्रा में अनुशंसित कीटनाशकों का प्रयोग करें।", "कीट आबादी की निगरानी के लिए फेरोमोन ट्रैप लगाएं।", "एकीकृत कीट प्रबंधन (IPM) अपनाएं।", "स्प्रे शेड्यूल के लिए स्थानीय कृषि विस्तार अधिकारी से परामर्श लें।"],
+                storm:   ["गिरी हुई फसलों को खूंटी से सहारा दें।", "रोग फैलने से बचाने के लिए क्षतिग्रस्त पौधों के हिस्से हटाएं।", "पौधों की रिकवरी के लिए पर्णीय पोषक तत्व डालें।", "PM फसल बीमा योजना के तहत बीमा कवरेज जांचें।"],
+                frost:   ["ठंडी रातों में पौधों को फ्रॉस्ट क्लॉथ या पुआल से ढकें।", "पाले से पहले धुआं करें या पानी छिड़कें।", "पाला सहनशीलता बढ़ाने के लिए पोटेशियम युक्त खाद डालें।", "सुबह जल्दी सिंचाई से पाले का नुकसान कम हो सकता है।"],
+            },
+            or: {
+                normal:  ["ସ୍ଥିତି ଅପେକ୍ଷାକୃତ ସ୍ଥିର ଅଛି। ନିୟମିତ ଭାବେ ନଜର ରଖନ୍ତୁ।", "ଭବିଷ୍ୟତ ସୁରକ୍ଷା ପାଇଁ ଫସଲ ବୀମା ବିଚାର କରନ୍ତୁ।", "ଜୈବ ସାର ଦ୍ୱାରା ମାଟିର ସ୍ୱାସ୍ଥ୍ୟ ବଜାୟ ରଖନ୍ତୁ।"],
+                drought: ["ଜଳ ସଞ୍ଚୟ ପାଇଁ ତୁରନ୍ତ ଡ୍ରିପ୍ ସେଚ ଲଗାନ୍ତୁ।", "ମାଟିର ଆଦ୍ରତା ରକ୍ଷା ପାଇଁ ମଲ୍ଚିଂ କରନ୍ତୁ।", "ଖରାଖ୍ୟା-ସହ୍ୟ ବୀଜ ପାଇଁ କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ରଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।", "ଯଦି କ୍ଷତି ୩୩% ରୁ ଅଧିକ ହୁଏ ତେବେ ଫସଲ ବୀମା ଦାବି କରନ୍ତୁ।"],
+                flood:   ["ଯଥାଶୀଘ୍ର ଖାଲ ଦ୍ୱାରା ଅତିରିକ୍ତ ଜଳ ବାହାର କରନ୍ତୁ।", "ବନ୍ୟା ପରେ ଫଙ୍ଗଲ୍ ରୋଗ ରୋକିବା ପାଇଁ ଫଙ୍ଗିସାଇଡ୍ ପ୍ରୟୋଗ କରନ୍ତୁ।", "ଗୁରୁତର ଆକ୍ରାନ୍ତ ଜାଗାରେ ପୁଣି ଚାଷ କରନ୍ତୁ।", "ସାହାଯ୍ୟ ପାଇଁ ବ୍ଲକ୍ କୃଷି ଅଧିକାରୀଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।"],
+                pest:    ["ସଠିକ୍ ମାତ୍ରାରେ ଅନୁଶଂସିତ କୀଟନାଶକ ବ୍ୟବହାର କରନ୍ତୁ।", "କୀଟ ସଂଖ୍ୟା ନିରୀକ୍ଷଣ ପାଇଁ ଫେରୋମୋନ୍ ଟ୍ରାପ୍ ଲଗାନ୍ତୁ।", "ଏକୀଭୂତ କୀଟ ପ୍ରବନ୍ଧନ (IPM) ଅଭ୍ୟାସ କରନ୍ତୁ।", "ସ୍ଥାନୀୟ କୃଷି ସଂପ୍ରସାରଣ ଅଧିକାରୀଙ୍କ ସହ ପରାମର୍ଶ କରନ୍ତୁ।"],
+                storm:   ["ଖୁଣ୍ଟ ସାହାଯ୍ୟରେ ଶୋଇ ପଡ଼ିଥିବା ଫସଲକୁ ଖଡ଼ା କରନ୍ତୁ।", "ରୋଗ ଛଡ଼ା ଆଟକାଇବା ପାଇଁ କ୍ଷତିଗ୍ରସ୍ତ ଅଂଶ କାଟି ଦିଅନ୍ତୁ।", "ଉଦ୍ଭିଦ ସୁସ୍ଥ ହେବା ପାଇଁ ପର୍ଣ୍ଣୀୟ ପୋଷଣ ଦିଅନ୍ତୁ।", "PM ଫସଲ ବୀମା ଯୋଜନା ଅଧୀନ ବୀମା ଆଚ୍ଛାଦନ ଯାଞ୍ଚ କରନ୍ତୁ।"],
+                frost:   ["ଥଣ୍ଡା ରାତ୍ରିରେ ଫ୍ରଷ୍ଟ ବସ୍ତ୍ର ବା ଖଡ଼ରେ ଉଦ୍ଭିଦ ଢାଙ୍କନ୍ତୁ।", "ଆଶା ଶୀଳ ପୂର୍ବରୁ ଧୂଆଁ ଦିଅନ୍ତୁ ବା ଜଳ ଛଟାନ୍ତୁ।", "ଶୀଳ ସହ୍ୟ ଶକ୍ତି ବଢ଼ାଇବା ପାଇଁ ପୋଟାଶ ସାର ଦିଅନ୍ତୁ।", "ସକାଳ ଜଳସେଚନ ଶୀଳ କ୍ଷତି କମ କରିପାରେ।"],
+            },
+            bn: {
+                normal:  ["পরিস্থিতি তুলনামূলকভাবে স্থিতিশীল। নিয়মিত পর্যবেক্ষণ করুন।", "ভবিষ্যৎ সুরক্ষার জন্য ফসল বীমা বিবেচনা করুন।", "জৈব উপাদান দিয়ে মাটির স্বাস্থ্য বজায় রাখুন।"],
+                drought: ["জল সংরক্ষণের জন্য অবিলম্বে ড্রিপ সেচ স্থাপন করুন।", "মাটির আর্দ্রতা ধরে রাখতে মালচিং করুন।", "খরা-প্রতিরোধী বীজের জন্য কৃষি বিজ্ঞান কেন্দ্রে যোগাযোগ করুন।", "ক্ষতি ৩৩% ছাড়ালে ফসল বীমার দাবি করুন।"],
+                flood:   ["যত তাড়াতাড়ি সম্ভব নালা দিয়ে অতিরিক্ত জল নিষ্কাশন করুন।", "বন্যার পরে ছত্রাকজনিত রোগ প্রতিরোধে ছত্রাকনাশক প্রয়োগ করুন।", "মারাত্মকভাবে ক্ষতিগ্রস্ত জায়গায় পুনরায় রোপণ করুন।", "ত্রাণ সহায়তার জন্য কৃষি কর্মকর্তাকে জানান।"],
+                pest:    ["সঠিক মাত্রায় অনুমোদিত কীটনাশক প্রয়োগ করুন।", "কীটপতঙ্গ পর্যবেক্ষণে ফেরোমোন ফাঁদ ব্যবহার করুন।", "সমন্বিত কীটপতঙ্গ ব্যবস্থাপনা (IPM) অনুশীলন করুন।", "স্থানীয় কৃষি সম্প্রসারণ কর্মকর্তার পরামর্শ নিন।"],
+                storm:   ["ঢলে পড়া ফসলকে খুঁটি দিয়ে সাপোর্ট দিন।", "রোগ ছড়ানো রোধে ক্ষতিগ্রস্ত গাছের অংশ সরিয়ে ফেলুন।", "গাছ সুস্থ হতে পাতায় পুষ্টিকর সার দিন।", "PM ফসল বীমা যোজনার অধীনে বীমা কভারেজ পরীক্ষা করুন।"],
+                frost:   ["ঠান্ডা রাতে গাছ ফ্রস্ট কাপড় বা খড় দিয়ে ঢেকে দিন।", "তুষারপাতের আগে ধোঁয়া দিন বা জল ছিটান।", "তুষার সহনশীলতা বাড়াতে পটাশিয়াম সার প্রয়োগ করুন।", "ভোরের সেচ তুষারপাতের ক্ষতি কমাতে পারে।"],
+            },
+            te: {
+                normal:  ["పరిస్థితులు సాపేక్షంగా స్థిరంగా ఉన్నాయి. క్రమం తప్పకుండా పర్యవేక్షించండి।", "భవిష్యత్ రక్షణ కోసం పంట బీమా పరిగణించండి।", "సేంద్రీయ ఎరువులతో నేల ఆరోగ్యాన్ని నిర్వహించండి।"],
+                drought: ["నీటిని ఆదా చేయడానికి వెంటనే డ్రిప్ సేద్యం ఏర్పాటు చేయండి।", "నేల తేమను నిలుపుకోవడానికి మల్చింగ్ చేయండి।", "కరువు-నిరోధక విత్తనాలకు కృషి విజ్ఞాన కేంద్రాన్ని సంప్రదించండి।", "నష్టం 33% మించితే పంట బీమా క్లెయిమ్ చేయండి।"],
+                flood:   ["వీలైనంత త్వరగా మురుగు కాలువల ద్వారా అదనపు నీటిని తీసివేయండి।", "వరద తర్వాత శిలీంధ్ర వ్యాధులను నివారించడానికి శిలీంధ్ర నాశకాలు వేయండి।", "తీవ్రంగా దెబ్బతిన్న ప్రాంతాల్లో తిరిగి నాటండి।", "ఉపశమన సహాయం కోసం బ్లాక్ వ్యవసాయ అధికారికి నివేదించండి।"],
+                pest:    ["సిఫార్సు చేసిన పురుగు మందులను సరైన మోతాదులో వేయండి।", "పురుగుల సంఖ్యను పర్యవేక్షించడానికి ఫెరోమోన్ ఉచ్చులు వాడండి।", "సమగ్ర సస్యరక్షణ (IPM) పాటించండి।", "స్థానిక వ్యవసాయ విస్తరణ అధికారిని సంప్రదించండి।"],
+                storm:   ["పడిపోయిన పంటలకు స్టేకింగ్ ద్వారా మద్దతు ఇవ్వండి।", "వ్యాధి వ్యాప్తిని నివారించడానికి దెబ్బతిన్న మొక్క భాగాలు తొలగించండి।", "మొక్కలు కోలుకోవడానికి ఆకు మీద పోషకాలు వేయండి।", "PM ఫసల్ బీమా యోజన కింద బీమా కవరేజ్ తనిఖీ చేయండి।"],
+                frost:   ["చల్లని రాత్రుల్లో మొక్కలను ఫ్రాస్ట్ బట్ట లేదా గడ్డితో కప్పండి।", "మంచు ముందు పొగ పెట్టండి లేదా నీళ్ళు చల్లండి।", "మంచు సహనాన్ని పెంచడానికి పొటాషియం ఎరువులు వేయండి।", "తెల్లవారుజామున సేద్యం మంచు నష్టాన్ని తగ్గించగలదు।"],
+            },
+            mr: {
+                normal:  ["परिस्थिती तुलनेने स्थिर आहे. नियमितपणे निरीक्षण ठेवा।", "भविष्यातील संरक्षणासाठी पीक विमा विचारात घ्या।", "सेंद्रिय घटकांद्वारे मातीचे आरोग्य टिकवा।"],
+                drought: ["पाणी वाचवण्यासाठी ताबडतोब ठिबक सिंचन लावा।", "जमिनीतील ओलावा टिकवण्यासाठी मल्चिंग करा।", "दुष्काळ-प्रतिरोधक बियाण्यांसाठी कृषी विज्ञान केंद्राशी संपर्क करा।", "नुकसान 33% पेक्षा जास्त असल्यास पीक विमा दावा करा।"],
+                flood:   ["जमिनीतून अतिरिक्त पाणी शक्य तितक्या लवकर काढा।", "पूरानंतर बुरशीजन्य रोग टाळण्यासाठी बुरशीनाशक फवारा।", "गंभीरपणे बाधित ठिकाणी पुन्हा लागवड करा।", "मदतीसाठी तालुका कृषी अधिकाऱ्यांना कळवा।"],
+                pest:    ["शिफारस केलेल्या कीटकनाशकांचा योग्य डोसमध्ये वापर करा।", "किडींच्या संख्येवर लक्ष ठेवण्यासाठी फेरोमोन सापळे लावा।", "एकात्मिक कीड व्यवस्थापन (IPM) पद्धत वापरा।", "स्थानिक कृषी विस्तार अधिकाऱ्यांचा सल्ला घ्या।"],
+                storm:   ["पडलेल्या पिकांना आधार द्या।", "रोग पसरू नये म्हणून खराब झालेले पानांचे भाग काढा।", "झाडे सावरण्यासाठी पर्णीय पोषणद्रव्ये द्या।", "PM फसल विमा योजनेअंतर्गत विमा संरक्षण तपासा।"],
+                frost:   ["थंड रात्री झाडांना फ्रॉस्ट कापड किंवा पेंढ्याने झाका।", "अपेक्षित दंव्याआधी धूर करा किंवा पाणी शिंपडा।", "दंव्याचा प्रतिकार वाढवण्यासाठी पोटॅशियमयुक्त खते द्या।", "सकाळी लवकर सिंचन केल्यास दंव्याचे नुकसान कमी होते।"],
+            },
+            ta: {
+                normal:  ["நிலைமைகள் ஒப்பீட்டளவில் நிலையானவை. தொடர்ந்து கண்காணிக்கவும்।", "எதிர்கால பாதுகாப்பிற்கு பயிர் காப்பீட்டை பரிசீலிக்கவும்।", "இயற்கை உரங்களால் மண் ஆரோக்கியத்தை பராமரிக்கவும்।"],
+                drought: ["நீர் சேமிக்க உடனடியாக சொட்டு நீர்ப்பாசனம் அமைக்கவும்।", "மண் ஈரப்பதத்தை தக்க வைக்க மல்ச்சிங் செய்யவும்।", "வறட்சி-எதிர்ப்பு விதைகளுக்கு கிருஷி விஞ்ஞான கேந்திரத்தை தொடர்பு கொள்ளவும்।", "நஷ்டம் 33% மீறினால் பயிர் காப்பீட்டு கோரிக்கை செய்யவும்।"],
+                flood:   ["கூடியவரை விரைவில் வடிகால்கள் மூலம் அதிகப்படியான நீரை வெளியேற்றவும்।", "வெள்ளத்திற்குப் பிறகு பூஞ்சை நோய்களை தடுக்க பூஞ்சைக்கொல்லி தெளிக்கவும்।", "மோசமாக பாதிக்கப்பட்ட இடங்களில் மீண்டும் நடவு செய்யவும்।", "நிவாரண உதவிக்கு வேளாண் அலுவலரிடம் தெரிவிக்கவும்।"],
+                pest:    ["பரிந்துரைக்கப்பட்ட பூச்சிக்கொல்லிகளை சரியான அளவில் தெளிக்கவும்।", "பூச்சிகளின் எண்ணிக்கையை கண்காணிக்க பெரோமோன் கண்ணிகளை பயன்படுத்தவும்।", "ஒருங்கிணைந்த பூச்சி மேலாண்மை (IPM) பின்பற்றவும்।", "உள்ளூர் வேளாண் விரிவாக்க அலுவலரிடம் ஆலோசனை பெறவும்।"],
+                storm:   ["விழுந்த பயிர்களுக்கு கம்பு வைத்து ஆதரவு கொடுக்கவும்।", "நோய் பரவாமல் தடுக்க சேதமடைந்த தாவர பகுதிகளை நீக்கவும்।", "தாவரங்கள் மீட்க இலை வழி ஊட்டச்சத்துக்கள் வழங்கவும்।", "PM பசல் பீமா யோஜனாவின் கீழ் காப்பீட்டை சரிபார்க்கவும்।"],
+                frost:   ["குளிர் இரவுகளில் தாவரங்களை பனி ஆடை அல்லது வைக்கோலால் மூடவும்।", "எதிர்பார்க்கப்படும் பனிக்கு முன் புகை போடவும் அல்லது தண்ணீர் தெளிக்கவும்।", "பனி சகிப்புத்தன்மை அதிகரிக்க பொட்டாசியம் உரங்கள் இடவும்।", "அதிகாலை பாசனம் பனி சேதத்தை குறைக்கும்।"],
+            },
+            gu: {
+                normal:  ["પરિસ્થિતિ પ્રમાણમાં સ્થિર છે. નિયમિત નિરીક્ષણ કરો।", "ભવિષ્યની સુરક્ষા માટે પાક વીમો વિચારો।", "જૈવ ઇનપુટ્સ દ્વારા જમીનનું સ્વાસ્થ્ય જાળવો।"],
+                drought: ["પાણી બચાવવા તાત્કાલિક ટપક સિંચાઈ ગોઠવો।", "જમીનની ભેજ ટકાવવા મલ્ચિંગ કરો।", "દુષ્કાળ-પ્રતિરોધી બિયારણ માટે કૃષિ વિજ્ઞાન કેન્દ્ર સાથે સંપર્ક કરો।", "નુકસાન 33% કરતા વધારે હોય તો પાક વીમા દાવો કરો।"],
+                flood:   ["નહેર દ્વારા વધારાનું પાણી શક્ય તેટલી ઝડપથી કાઢો।", "પૂર પછી ફૂગના રોગો અટકાવવા ફૂગનાશક છાંટો।", "ગંભીર રીતે અસરગ્રસ્ત વિસ્તારોમાં ફરી વાવણી કરો।", "રાહત સહાય માટે તાલુકા કૃષિ અધિકારીને જાણ કરો।"],
+                pest:    ["ભલામણ કરેલ જંતુનાશકો યોગ્ય માત્રામાં ઉપયોગ કરો।", "જીવાતોની સંખ્યા મોનિટર કરવા ફેરોમોન ટ્રેપ લગાડો।", "સંકલિત જીવાત વ્યવસ્થાપન (IPM) અપનાવો।", "સ્થાનિક કૃષિ વિસ્તાર અધિકારીનો સંપર્ક કરો।"],
+                storm:   ["ઢળી ગયેલ પાકને ડાંડો વડે ટેકો આપો।", "રોગ ફેલાતો અટકાવવા ક્ષતિગ્રસ્ત ભાગો દૂર કરો।", "છોડ સ્વસ્થ થવા પર્ણ-ઉર આપો।", "PM ફસલ વીમા યોજના હેઠળ વીમા કવરેજ ચકાસો।"],
+                frost:   ["ઠંડી રાત્રે ફ્રૉસ્ટ ક્લૉથ કે ઘાસ વડે છોડ ઢાંકો।", "અપેક્ષિત હિમ પહેલા ધૂમ્રપ્રસાર કરો અથવા પાણી છાંટો।", "હિમ સહનશક્તિ વધારવા પોટૅશિયમ ખાતર આપો।", "વહેલી સવારે સિંચાઈ ઠારના નુકસાનને ઘટાડી શકે।"],
+            },
+            kn: {
+                normal:  ["ಪರಿಸ್ಥಿತಿ ತುಲನಾತ್ಮಕವಾಗಿ ಸ್ಥಿರವಾಗಿದೆ. ನಿಯಮಿತವಾಗಿ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಿ.", "ಭವಿಷ್ಯದ ರಕ್ಷಣೆಗಾಗಿ ಬೆಳೆ ವಿಮೆ ಪರಿಗಣಿಸಿ.", "ಸಾವಯವ ಒಳಸುರಿಗಳಿಂದ ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಕಾಪಾಡಿ."],
+                drought: ["ನೀರು ಉಳಿಸಲು ತಕ್ಷಣ ಹನಿ ನೀರಾವರಿ ಅಳವಡಿಸಿ.", "ಮಣ್ಣಿನ ತೇವಾಂಶ ಉಳಿಸಿಕೊಳ್ಳಲು ಮಲ್ಚಿಂಗ್ ಮಾಡಿ.", "ಬರ-ನಿರೋಧಕ ಬೀಜಗಳಿಗಾಗಿ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ ಸಂಪರ್ಕಿಸಿ.", "ನಷ್ಟ 33% ಮೀರಿದರೆ ಬೆಳೆ ವಿಮಾ ಹಕ್ಕು ಸಲ್ಲಿಸಿ."],
+                flood:   ["ಸಾಧ್ಯವಾದಷ್ಟು ಬೇಗ ಚರಂಡಿಗಳ ಮೂಲಕ ಹೆಚ್ಚುವರಿ ನೀರು ಹರಿಸಿ.", "ನೆರೆಯ ನಂತರ ಶಿಲೀಂಧ್ರ ರೋಗ ತಡೆಯಲು ಶಿಲೀಂಧ್ರನಾಶಕ ಸಿಂಪಡಿಸಿ.", "ತೀವ್ರವಾಗಿ ಹಾನಿಗೊಳಗಾದ ಪ್ರದೇಶದಲ್ಲಿ ಮರು ನಾಟಿ ಮಾಡಿ.", "ಪರಿಹಾರ ನೆರವಿಗಾಗಿ ಬ್ಲಾಕ್ ಕೃಷಿ ಅಧಿಕಾರಿಗೆ ತಿಳಿಸಿ."],
+                pest:    ["ಶಿಫಾರಸು ಮಾಡಿದ ಕೀಟನಾಶಕಗಳನ್ನು ಸರಿಯಾದ ಪ್ರಮಾಣದಲ್ಲಿ ಬಳಸಿ.", "ಕೀಟ ಜನಸಂಖ್ಯೆ ಮೇಲ್ವಿಚಾರಣೆಗೆ ಫೆರೋಮೋನ್ ಬಲೆಗಳನ್ನು ಬಳಸಿ.", "ಸಮಗ್ರ ಕೀಟ ನಿರ್ವಹಣೆ (IPM) ಅಭ್ಯಾಸಿಸಿ.", "ಸ್ಥಳೀಯ ಕೃಷಿ ವಿಸ್ತರಣಾ ಅಧಿಕಾರಿ ಸಲಹೆ ಪಡೆಯಿರಿ."],
+                storm:   ["ಬಿದ್ದ ಬೆಳೆಗಳಿಗೆ ಕೋಲು ಹಾಕಿ ಆಧಾರ ನೀಡಿ.", "ರೋಗ ಹರಡದಂತೆ ಹಾನಿಗೊಳಗಾದ ಸಸ್ಯ ಭಾಗಗಳನ್ನು ತೆಗೆಯಿರಿ.", "ಸಸ್ಯ ಚೇತರಿಕೆಗೆ ಎಲೆಗಳ ಮೇಲೆ ಪೋಷಕಾಂಶ ಸಿಂಪಡಿಸಿ.", "PM ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆಯಡಿ ವಿಮಾ ರಕ್ಷಣೆ ಪರಿಶೀಲಿಸಿ."],
+                frost:   ["ಚಳಿ ರಾತ್ರಿ ಫ್ರಾಸ್ಟ್ ಬಟ್ಟೆ ಅಥವಾ ಒಣಹುಲ್ಲಿನಿಂದ ಗಿಡ ಮುಚ್ಚಿ.", "ನಿರೀಕ್ಷಿತ ಹಿಮದ ಮೊದಲು ಹೊಗೆ ಹಾಕಿ ಅಥವಾ ನೀರು ಸಿಂಪಡಿಸಿ.", "ಹಿಮ ಸಹಿಷ್ಣುತೆ ಹೆಚ್ಚಿಸಲು ಪೊಟ್ಯಾಸಿಯಂ ಗೊಬ್ಬರ ಹಾಕಿ.", "ಬೆಳಗಿನ ಜಾವ ನೀರಾವರಿ ಹಿಮ ಹಾನಿ ಕಡಿಮೆ ಮಾಡಬಹುದು."],
+            },
+            ml: {
+                normal:  ["സ്ഥിതി താരതമ്യേന സ്ഥിരമാണ്. പതിവായി നിരീക്ഷിക്കൂ.", "ഭാവി സംരക്ഷണത്തിനായി വിള ഇൻഷുറൻസ് പരിഗണിക്കൂ.", "ജൈവ ഉൽപ്പന്നങ്ങൾ ഉപയോഗിച്ച് മണ്ണിന്റെ ആരോഗ്യം നിലനിർത്തൂ."],
+                drought: ["വെള്ളം ലാഭിക്കാൻ ഉടൻ ഡ്രിപ്പ് ജലസേചനം ഏർപ്പെടുത്തൂ.", "മണ്ണിലെ ഈർപ്പം നിലനിർത്താൻ മൾച്ചിംഗ് ചെയ്യൂ.", "വരൾച്ച-പ്രതിരോധ വിത്തുകൾക്കായി കൃഷി വിജ്ഞാൻ കേന്ദ്രം ബന്ധപ്പെടൂ.", "നഷ്ടം 33% കവിഞ്ഞാൽ വിള ഇൻഷുറൻസ് ക്ലെയിം ചെയ്യൂ."],
+                flood:   ["കഴിയുന്നത്ര വേഗം ചാലുകൾ വഴി അധിക വെള്ളം ഒഴുക്കൂ.", "വെള്ളപ്പൊക്കത്തിനു ശേഷം കുമിൾ രോഗം തടയാൻ ഫംഗിസൈഡ് ഉപയോഗിക്കൂ.", "കഠിനമായി ബാധിച്ച സ്ഥലങ്ങളിൽ വീണ്ടും നടൂ.", "ദുരിതാശ്വാസ സഹായത്തിനായി ബ്ലോക്ക് കൃഷി ഓഫീസറെ അറിയിക്കൂ."],
+                pest:    ["ശുപാർശ ചെയ്ത കീടനാശിനികൾ ശരിയായ അളവിൽ പ്രയോഗിക്കൂ.", "കീടങ്ങളുടെ എണ്ണം നിരീക്ഷിക്കാൻ ഫെറോമോൺ കെണികൾ ഉപയോഗിക്കൂ.", "സമഗ്ര കീട നിയന്ത്രണം (IPM) പിന്തുടരൂ.", "പ്രാദേശിക കൃഷി വിപുലന ഓഫീസറോട് ഉപദേശം തേടൂ."],
+                storm:   ["വീണ കൃഷിക്ക് കമ്പ് ഉപയോഗിച്ച് താങ്ങ് നൽകൂ.", "രോഗം പടരാതിരിക്കാൻ കേടായ ചെടി ഭാഗങ്ങൾ നീക്കൂ.", "ചെടികൾ കരകയറാൻ ഇലകളിൽ പോഷകങ്ങൾ തളിക്കൂ.", "PM ഫസൽ ബീമ യോജനയ്ക്ക് കീഴിൽ ഇൻഷുറൻസ് കവറേജ് പരിശോധിക്കൂ."],
+                frost:   ["തണുത്ത രാത്രികളിൽ ഫ്രോസ്റ്റ് ക്ലോത്ത് അല്ലെങ്കിൽ വൈക്കോൽ കൊണ്ട് ചെടി മൂടൂ.", "പ്രതീക്ഷിക്കുന്ന മഞ്ഞിനു മുൻപ് പുക ഇടൂ അല്ലെങ്കിൽ വെള്ളം തളിക്കൂ.", "മഞ്ഞ് സഹിഷ്ണുത കൂട്ടാൻ പൊട്ടാസ്യം വളം ഇടൂ.", "പുലർച്ചെ ജലസേചനം ഹിമ നഷ്ടം കുറയ്ക്കും."],
+            },
+        };
+
+        function getLossTips(weather) {
+            const lang = document.getElementById('langSelector').value || 'en';
+            const langTips = lossTipsAllLang[lang] || lossTipsAllLang['en'];
+            return langTips[weather] || lossTipsAllLang['en'][weather];
+        }
+        const cropMSP = { rice: 2183, wheat: 2275, maize: 1962, sugarcane: 315, cotton: 6620, soybean: 4600, tomato: 2000, potato: 1200, onion: 1500, groundnut: 5850 };
+const lossTipsDB = {
+            normal:   ["Conditions are relatively stable. Monitor regularly.", "Consider crop insurance for future protection.", "Maintain soil health with organic inputs."],
+            drought:  ["Install drip irrigation immediately to conserve water.", "Apply mulching to retain soil moisture.", "Contact Krishi Vigyan Kendra for drought-resistant seed varieties.", "Consider crop insurance claim if loss exceeds 33%."],
+            flood:    ["Drain excess water using field channels as soon as possible.", "Apply fungicides to prevent fungal diseases after flooding.", "Replant in severely affected patches.", "Report to block agriculture officer for relief assistance."],
+            pest:     ["Apply recommended pesticides at the right dosage.", "Use pheromone traps for monitoring pest population.", "Practice integrated pest management (IPM).", "Consult local agriculture extension officer for spray schedule."],
+            storm:    ["Provide support to fallen crops using staking.", "Remove damaged plant parts to prevent disease spread.", "Apply foliar nutrients to help plants recover.", "Check for insurance coverage under PM Fasal Bima Yojana."],
+            frost:    ["Cover plants with frost cloth or straw during cold nights.", "Apply smoke or sprinkle water before expected frost.", "Apply potassium-rich fertilizers to improve frost tolerance.", "Early morning irrigation can reduce frost damage."],
+        };
+async function predictLoss() {
+            const crop = document.getElementById('lossCropType').value;
+            const area = parseFloat(document.getElementById('lossArea').value);
+            const expYield = parseFloat(document.getElementById('lossExpYield').value);
+            const weather = document.getElementById('lossWeather').value;
+            const stage = document.getElementById('lossStage').value;
+            
+            if (!crop || !area || !expYield || !weather || !stage) { 
+                alert('Please fill in all fields to predict crop loss.'); 
+                return; 
+            }
+
+            // 1. Grab the button BEFORE the try block
+            const btn = document.getElementById('lossPredictBtn');
+            const originalText = btn.innerHTML;
+
+            try {
+                // 2. Change button text and fade it out slightly to show it is "thinking"
+                btn.innerHTML = "⏳ AI is Calculating...";
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Send data to our Node.js backend
+                const response = await fetch(`${API_URL}/predict-loss`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crop, area, expYield, weather, stage })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Get the ML predicted loss percentage from the backend
+                    const lossPercent = parseFloat(data.lossPercent); // Ensure it's a number
+                    
+                    // Calculate the financial impact based on the ML prediction
+                    const totalExpected = area * expYield;
+                    const lossQtl = (lossPercent / 100) * totalExpected;
+                    const actualQtl = totalExpected - lossQtl;
+                    const financialLoss = Math.round(lossQtl * (cropMSP[crop] || 2000));
+                    
+                    // Update the UI
+                    document.getElementById('lossPlaceholder').style.display = 'none';
+                    document.getElementById('lossResultContent').style.display = 'block';
+                    
+                    // Display the percentage (rounded to 2 decimal places for a clean look)
+                    document.getElementById('lossPercText').textContent = lossPercent.toFixed(2) + '%';
+                    setTimeout(() => { document.getElementById('lossMeterFill').style.width = lossPercent + '%'; }, 100);
+                    
+                    document.getElementById('lossEstLoss').textContent = lossPercent.toFixed(2) + '%';
+                    document.getElementById('lossExpOut').textContent = totalExpected.toFixed(1) + ' Qtl';
+                    document.getElementById('lossActOut').textContent = actualQtl.toFixed(1) + ' Qtl';
+                    document.getElementById('lossFinImpact').textContent = '₹' + financialLoss.toLocaleString('en-IN');
+                    
+                    // Get tips based on weather
+                    document.getElementById('lossTipsList').innerHTML = lossTipsDB[weather].map(t => `<div class="loss-tip-item">✅ ${t}</div>`).join('');
+                } else {
+                    alert("Error: " + data.message);
+                }
+
+            } catch(err) {
+                console.error(err);
+                alert("Failed to reach the backend server for ML prediction. Is Python running?");
+            } finally {
+                // 3. ALWAYS restore the button to normal, whether it succeeded or failed!
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }        const translations = {
+            en: {
+                heroTitle: "Cultivating the Future<br><span style='color: var(--primary);'>with Technology</span>",
+                heroSubtitle: "Monitor crops and boost yields with Apex Coders.",
+                getStarted: "Get Started Free", login: "Log In", signup: "Sign Up",
+                dashTitle: "Farm Overview", cardSoil: "Soil Moisture", cardStatus: "Status: Optimal 🟢",
+                cardWeather: "Current Weather", weatherDetail: "Sunny • 45%", cardMarket: "Market Price",
+                marketTrend: "▲ 2.4% Increase", loginTitle: "Farmer Login", signupTitle: "Join Apex Coders",
+                lblUser: "Username", lblPass: "Password", loginSubmit: "Access Dashboard", signupSubmit: "Create Account",
+                lblFullName: "Full Name", lblState: "State", lblDistrict: "District", lblNewUser: "Username", lblNewPass: "Password",
+                emiTitle: "Farm Loan EMI Calculator", lblLoanAmount: "Loan Amount (₹)", lblInterestRate: "Interest Rate (% per year)",
+                lblLoanTenure: "Loan Tenure (Years)", calculateBtn: "Calculate EMI", lblMonthlyEMI: "Monthly EMI",
+                lblTotalAmount: "Total Amount Payable", lblTotalInterest: "Total Interest", lblPrincipal: "Principal Amount", lblInterestPercent: "Interest %",
+                lossSectionTitle: "Crop Loss Prediction", lossBadge: "AI Powered",
+                lossInputHeading: "🌾 Enter Farm Details", lblCropType: "Crop Type", optSelectCrop: "Select crop...",
+                optRice: "Rice (Paddy)", optWheat: "Wheat", optMaize: "Maize (Corn)", optSugarcane: "Sugarcane",
+                optCotton: "Cotton", optSoybean: "Soybean", optTomato: "Tomato", optPotato: "Potato", optOnion: "Onion", optGroundnut: "Groundnut",
+                lblArea: "Total Area (in Acres)", lblExpYield: "Expected Yield (Quintals/Acre)",
+                lblWeatherCond: "Current Weather Condition", optSelectWeather: "Select condition...",
+                optNormal: "Normal / Sunny", optDrought: "Drought / Dry Spell", optFlood: "Excess Rain / Flood",
+                optPest: "Pest / Disease Attack", optStorm: "Storm / Heavy Wind", optFrost: "Frost / Cold Wave",
+                lblGrowthStage: "Crop Growth Stage", optSelectStage: "Select stage...",
+                optSowing: "Sowing / Germination", optVegetative: "Vegetative Growth", optFlowering: "Flowering",
+                optGrain: "Grain Filling / Fruiting", optHarvest: "Near Harvest",
+                lossPredictBtn: "🔍 Predict Crop Loss",
+                lossPlaceholderText: "Fill in your farm details on the left and click Predict to see your estimated crop loss analysis.",
+                lossReportTitle: "📊 Loss Analysis Report", lossRiskLabel: "Loss Risk Level",
+                lblEstLoss: "Estimated Loss", lblExpOut: "Expected Yield", lblActOut: "Actual Yield (Est.)", lblFinImpact: "Financial Impact",
+                lossRecommTitle: "💡 Recommendations",
+            },
+            hi: { heroTitle: "प्रौद्योगिकी के साथ<br><span style='color: var(--primary);'>भविष्य की खेती</span>", heroSubtitle: "Apex Coders के साथ फसलों की निगरानी करें।", getStarted: "मुफ्त शुरू करें", login: "लॉग इन", signup: "साइन अप", dashTitle: "खेत का विवरण", cardSoil: "मिट्टी की नमी", cardStatus: "स्थिति: उत्तम 🟢", cardWeather: "वर्तमान मौसम", weatherDetail: "धूप • 45%", cardMarket: "बाजार मूल्य", marketTrend: "▲ 2.4% वृद्धि", loginTitle: "किसान लॉगिन", signupTitle: "Apex Coders से जुड़ें", lblUser: "उपयोगकर्ता नाम", lblPass: "पासवर्ड", loginSubmit: "डैशबोर्ड खोलें", signupSubmit: "खाता बनाएं", lblFullName: "पूरा नाम", lblState: "राज्य", lblDistrict: "जिला", lblNewUser: "उपयोगकर्ता नाम", lblNewPass: "पासवर्ड", emiTitle: "कृषि ऋण ईएमआई कैलकुलेटर", lblLoanAmount: "ऋण राशि (₹)", lblInterestRate: "ब्याज दर (% प्रति वर्ष)", lblLoanTenure: "ऋण अवधि (वर्ष)", calculateBtn: "ईएमआई की गणना करें", lblMonthlyEMI: "मासिक ईएमआई", lblTotalAmount: "कुल देय राशि", lblTotalInterest: "कुल ब्याज", lblPrincipal: "मूल राशि", lblInterestPercent: "ब्याज %", lossSectionTitle: "फसल हानि पूर्वानुमान", lossBadge: "AI संचालित", lossInputHeading: "🌾 खेत का विवरण दर्ज करें", lblCropType: "फसल का प्रकार", optSelectCrop: "फसल चुनें...", optRice: "चावल (धान)", optWheat: "गेहूं", optMaize: "मक्का", optSugarcane: "गन्ना", optCotton: "कपास", optSoybean: "सोयाबीन", optTomato: "टमाटर", optPotato: "आलू", optOnion: "प्याज", optGroundnut: "मूंगफली", lblArea: "कुल क्षेत्रफल (एकड़)", lblExpYield: "अपेक्षित उपज (क्विंटल/एकड़)", lblWeatherCond: "मौसम की स्थिति", optSelectWeather: "स्थिति चुनें...", optNormal: "सामान्य / धूप", optDrought: "सूखा", optFlood: "बाढ़", optPest: "कीट / रोग", optStorm: "तूफान", optFrost: "पाला", lblGrowthStage: "फसल की अवस्था", optSelectStage: "अवस्था चुनें...", optSowing: "बुआई", optVegetative: "वानस्पतिक वृद्धि", optFlowering: "फूल", optGrain: "दाना भरना", optHarvest: "कटाई के निकट", lossPredictBtn: "🔍 अनुमान लगाएं", lossPlaceholderText: "विवरण भरें और Predict पर क्लिक करें।", lossReportTitle: "📊 हानि रिपोर्ट", lossRiskLabel: "हानि जोखिम", lblEstLoss: "अनुमानित हानि", lblExpOut: "अपेक्षित उपज", lblActOut: "वास्तविक उपज", lblFinImpact: "वित्तीय प्रभाव", lossRecommTitle: "💡 सुझाव" },
+            or: { heroTitle: "ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ସହିତ<br><span style='color: var(--primary);'>ଭବିଷ୍ୟତର ଚାଷ</span>", heroSubtitle: "Apex Coders ସହିତ ଫସଲ ଉପରେ ନଜର ରଖନ୍ତୁ।", getStarted: "ମାଗଣାରେ ଆରମ୍ଭ କରନ୍ତୁ", login: "ଲଗ୍ ଇନ୍", signup: "ସାଇନ୍ ଅପ୍", dashTitle: "ଫାର୍ମ ସମୀକ୍ଷା", cardSoil: "ମାଟିର ଆଦ୍ରତା", cardStatus: "ସ୍ଥିତି: ଉତ୍ତମ 🟢", cardWeather: "ପାଣିପାଗ", weatherDetail: "ଖରା • 45%", cardMarket: "ବଜାର ମୂଲ୍ୟ", marketTrend: "▲ 2.4% ବୃଦ୍ଧି", loginTitle: "କୃଷକ ଲଗ୍ ଇନ୍", signupTitle: "Apex Coders ରେ ଯୋଗ ଦିଅନ୍ତୁ", lblUser: "ଉପଭୋକ୍ତା ନାମ", lblPass: "ପାସୱାର୍ଡ", loginSubmit: "ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ", signupSubmit: "ଖାତା ଖୋଲନ୍ତୁ", lblFullName: "ପୁରା ନାମ", lblState: "ରାଜ୍ୟ", lblDistrict: "ଜିଲ୍ଲା", lblNewUser: "ଉପଭୋକ୍ତା ନାମ", lblNewPass: "ପାସୱାର୍ଡ", emiTitle: "କୃଷି ଋଣ ଇଏମଆଇ କାଲକୁଲେଟର", lblLoanAmount: "ଋଣ ରାଶି (₹)", lblInterestRate: "ସୁଧ ହାର (% ପ୍ରତି ବର୍ଷ)", lblLoanTenure: "ଋଣ ଅବଧି (ବର୍ଷ)", calculateBtn: "ଇଏମଆଇ ଗଣନା କରନ୍ତୁ", lblMonthlyEMI: "ମାସିକ ଇଏମଆଇ", lblTotalAmount: "ମୋଟ ଦେୟ ରାଶି", lblTotalInterest: "ମୋଟ ସୁଧ", lblPrincipal: "ମୂଖ୍ୟ ରାଶି", lblInterestPercent: "ସୁଧ %", lossSectionTitle: "ଫସଲ କ୍ଷତି ପୂର୍ବାନୁମାନ", lossBadge: "AI ଚାଳିତ", lossInputHeading: "🌾 ଫାର୍ମ ବିବରଣୀ ଦିଅନ୍ତୁ", lblCropType: "ଫସଲ ପ୍ରକାର", optSelectCrop: "ଫସଲ ବାଛନ୍ତୁ...", optRice: "ଚାଉଳ (ଧାନ)", optWheat: "ଗହମ", optMaize: "ମକା", optSugarcane: "ଆଖୁ", optCotton: "କପା", optSoybean: "ସୋୟାବିନ", optTomato: "ଟମାଟୋ", optPotato: "ଆଳୁ", optOnion: "ପିଆଜ", optGroundnut: "ଚିନାବାଦାମ", lblArea: "ମୋଟ କ୍ଷେତ୍ରଫଳ (ଏକର)", lblExpYield: "ଆଶା ଅମଳ (କ୍ୱିଣ୍ଟାଲ/ଏକର)", lblWeatherCond: "ବର୍ତ୍ତମାନ ପାଣିପାଗ", optSelectWeather: "ସ୍ଥିତି ବାଛନ୍ତୁ...", optNormal: "ସ୍ୱାଭାବିକ / ଖରା", optDrought: "ଖରାଖ୍ୟା / ଶୁଷ୍କ", optFlood: "ଅଧିକ ବର୍ଷା / ବନ୍ୟା", optPest: "କୀଟ / ରୋଗ ଆକ୍ରମଣ", optStorm: "ଝଡ଼ / ପ୍ରବଳ ବାୟୁ", optFrost: "ଶୀଳ / ଶୀତ ଲହର", lblGrowthStage: "ଫସଲ ବୃଦ୍ଧି ଅବସ୍ଥା", optSelectStage: "ଅବସ୍ଥା ବାଛନ୍ତୁ...", optSowing: "ବୁଣିବା / ଅଙ୍କୁରଣ", optVegetative: "ଉଦ୍ଭିଜ୍ୟ ବୃଦ୍ଧି", optFlowering: "ଫୁଲ ଆସିବା", optGrain: "ଦାନା ଭରିବା / ଫଳ ଧରିବା", optHarvest: "ଅମଳ ନିକଟ", lossPredictBtn: "🔍 ଫସଲ କ୍ଷତି ଅନୁମାନ କରନ୍ତୁ", lossPlaceholderText: "ବାମ ପଟେ ଫାର୍ମ ବିବରଣୀ ଭରନ୍ତୁ ଏବଂ ଅନୁମାନ ଦେଖିବା ପାଇଁ Predict କ୍ଲିକ୍ କରନ୍ତୁ।", lossReportTitle: "📊 କ୍ଷତି ବିଶ୍ଳେଷଣ ରିପୋର୍ଟ", lossRiskLabel: "କ୍ଷତି ଝୁଁକି ସ୍ତର", lblEstLoss: "ଅନୁମାନିତ କ୍ଷତି", lblExpOut: "ଆଶା ଅମଳ", lblActOut: "ବାସ୍ତବ ଅମଳ (ଅନୁ.)", lblFinImpact: "ଆର୍ଥିକ ପ୍ରଭାବ", lossRecommTitle: "💡 ପ୍ରସ୍ତାବ" },
+            bn: { heroTitle: "প্রযুক্তির সাথে<br><span style='color: var(--primary);'>ভবিষ্যতের চাষ</span>", heroSubtitle: "Apex Coders এর সাথে ফসল পর্যবেক্ষণ করুন এবং উৎপাদন বাড়ান।", getStarted: "বিনামূল্যে শুরু করুন", login: "লগ ইন", signup: "সাইন আপ", dashTitle: "খামার সংক্ষিপ্ত", cardSoil: "মাটির আর্দ্রতা", cardStatus: "অবস্থা: উত্তম 🟢", cardWeather: "বর্তমান আবহাওয়া", weatherDetail: "রোদ • 45%", cardMarket: "বাজার মূল্য", marketTrend: "▲ ২.৪% বৃদ্ধি", loginTitle: "কৃষক লগইন", signupTitle: "Apex Coders এ যোগ দিন", lblUser: "ব্যবহারকারীর নাম", lblPass: "পাসওয়ার্ড", loginSubmit: "ড্যাশবোর্ড খুলুন", signupSubmit: "অ্যাকাউন্ট তৈরি করুন", lblFullName: "পুরো নাম", lblState: "রাজ্য", lblDistrict: "জেলা", lblNewUser: "ব্যবহারকারীর নাম", lblNewPass: "পাসওয়ার্ড", emiTitle: "কৃষি ঋণ EMI ক্যালকুলেটর", lblLoanAmount: "ঋণের পরিমাণ (₹)", lblInterestRate: "সুদের হার (% বার্ষিক)", lblLoanTenure: "ঋণের মেয়াদ (বছর)", calculateBtn: "EMI গণনা করুন", lblMonthlyEMI: "মাসিক EMI", lblTotalAmount: "মোট প্রদেয় পরিমাণ", lblTotalInterest: "মোট সুদ", lblPrincipal: "মূল পরিমাণ", lblInterestPercent: "সুদ %", lossSectionTitle: "ফসল ক্ষতির পূর্বানুমান", lossBadge: "AI চালিত", lossInputHeading: "🌾 খামারের তথ্য দিন", lblCropType: "ফসলের ধরন", optSelectCrop: "ফসল নির্বাচন করুন...", optRice: "ধান", optWheat: "গম", optMaize: "ভুট্টা", optSugarcane: "আখ", optCotton: "তুলা", optSoybean: "সয়াবিন", optTomato: "টমেটো", optPotato: "আলু", optOnion: "পেঁয়াজ", optGroundnut: "চিনাবাদাম", lblArea: "মোট জমি (একর)", lblExpYield: "প্রত্যাশিত ফলন (কুইন্টাল/একর)", lblWeatherCond: "বর্তমান আবহাওয়া", optSelectWeather: "অবস্থা নির্বাচন করুন...", optNormal: "স্বাভাবিক / রোদ", optDrought: "খরা", optFlood: "অতিরিক্ত বৃষ্টি / বন্যা", optPest: "কীট / রোগ আক্রমণ", optStorm: "ঝড় / তীব্র বাতাস", optFrost: "তুষারপাত / শীত", lblGrowthStage: "ফসলের বৃদ্ধির পর্যায়", optSelectStage: "পর্যায় নির্বাচন করুন...", optSowing: "বপন / অঙ্কুরোদগম", optVegetative: "উদ্ভিজ্জ বৃদ্ধি", optFlowering: "ফুল আসা", optGrain: "দানা পূরণ / ফল ধরা", optHarvest: "ফসল কাটার নিকট", lossPredictBtn: "🔍 ফসল ক্ষতি অনুমান করুন", lossPlaceholderText: "বাম দিকে খামারের তথ্য পূরণ করুন এবং Predict ক্লিক করুন।", lossReportTitle: "📊 ক্ষতি বিশ্লেষণ রিপোর্ট", lossRiskLabel: "ক্ষতির ঝুঁকির স্তর", lblEstLoss: "আনুমানিক ক্ষতি", lblExpOut: "প্রত্যাশিত ফলন", lblActOut: "প্রকৃত ফলন (আনু.)", lblFinImpact: "আর্থিক প্রভাব", lossRecommTitle: "💡 পরামর্শ" },
+            te: { heroTitle: "సాంకేతికతతో<br><span style='color: var(--primary);'>భవిష్యత్తు వ్యవసాయం</span>", heroSubtitle: "Apex Coders తో పంటలను పర్యవేక్షించండి మరియు దిగుబడిని పెంచుకోండి.", getStarted: "ఉచితంగా ప్రారంభించండి", login: "లాగిన్", signup: "సైన్ అప్", dashTitle: "వ్యవసాయ అవలోకనం", cardSoil: "నేల తేమ", cardStatus: "స్థితి: ఉత్తమం 🟢", cardWeather: "ప్రస్తుత వాతావరణం", weatherDetail: "ఎండ • 45%", cardMarket: "మార్కెట్ ధర", marketTrend: "▲ 2.4% పెరుగుదల", loginTitle: "రైతు లాగిన్", signupTitle: "Apex Coders లో చేరండి", lblUser: "వినియోగదారు పేరు", lblPass: "పాస్‌వర్డ్", loginSubmit: "డాష్‌బోర్డ్ తెరవండి", signupSubmit: "ఖాతా సృష్టించండి", lblFullName: "పూర్తి పేరు", lblState: "రాష్ట్రం", lblDistrict: "జిల్లా", lblNewUser: "వినియోగదారు పేరు", lblNewPass: "పాస్‌వర్డ్", emiTitle: "వ్యవసాయ రుణ EMI కాలిక్యులేటర్", lblLoanAmount: "రుణ మొత్తం (₹)", lblInterestRate: "వడ్డీ రేటు (% సంవత్సరానికి)", lblLoanTenure: "రుణ వ్యవధి (సంవత్సరాలు)", calculateBtn: "EMI లెక్కించండి", lblMonthlyEMI: "నెలవారీ EMI", lblTotalAmount: "చెల్లించాల్సిన మొత్తం", lblTotalInterest: "మొత్తం వడ్డీ", lblPrincipal: "అసలు మొత్తం", lblInterestPercent: "వడ్డీ %", lossSectionTitle: "పంట నష్ట అంచనా", lossBadge: "AI ఆధారిత", lossInputHeading: "🌾 వ్యవసాయ వివరాలు నమోదు చేయండి", lblCropType: "పంట రకం", optSelectCrop: "పంట ఎంచుకోండి...", optRice: "వరి (ధాన్యం)", optWheat: "గోధుమ", optMaize: "మొక్కజొన్న", optSugarcane: "చెరకు", optCotton: "పత్తి", optSoybean: "సోయాబీన్", optTomato: "టమాటో", optPotato: "బంగాళాదుంప", optOnion: "ఉల్లిపాయ", optGroundnut: "వేరుశనగ", lblArea: "మొత్తం విస్తీర్ణం (ఎకరాలు)", lblExpYield: "అంచనా దిగుబడి (క్వింటాల్/ఎకరం)", lblWeatherCond: "ప్రస్తుత వాతావరణ స్థితి", optSelectWeather: "స్థితి ఎంచుకోండి...", optNormal: "సాధారణ / ఎండ", optDrought: "కరువు", optFlood: "అధిక వర్షం / వరద", optPest: "కీటక / వ్యాధి దాడి", optStorm: "తుఫాను / తీవ్ర గాలి", optFrost: "మంచు / చలి", lblGrowthStage: "పంట పెరుగుదల దశ", optSelectStage: "దశ ఎంచుకోండి...", optSowing: "విత్తనం / మొలక", optVegetative: "పెరుగుదల దశ", optFlowering: "పూత దశ", optGrain: "గింజ నిండే దశ / పండు", optHarvest: "పంట కోత సమీపం", lossPredictBtn: "🔍 పంట నష్టం అంచనా వేయండి", lossPlaceholderText: "ఎడమవైపు వ్యవసాయ వివరాలు నమోదు చేసి Predict నొక్కండి.", lossReportTitle: "📊 నష్ట విశ్లేషణ నివేదిక", lossRiskLabel: "నష్ట ప్రమాద స్థాయి", lblEstLoss: "అంచనా నష్టం", lblExpOut: "అంచనా దిగుబడి", lblActOut: "వాస్తవ దిగుబడి (అం.)", lblFinImpact: "ఆర్థిక ప్రభావం", lossRecommTitle: "💡 సిఫార్సులు" },
+            mr: { heroTitle: "तंत्रज्ञानासह<br><span style='color: var(--primary);'>भविष्याची शेती</span>", heroSubtitle: "Apex Coders सह पिकांवर लक्ष ठेवा आणि उत्पादन वाढवा.", getStarted: "मोफत सुरू करा", login: "लॉग इन", signup: "साइन अप", dashTitle: "शेत आढावा", cardSoil: "मातीतील ओलावा", cardStatus: "स्थिती: उत्तम 🟢", cardWeather: "सध्याचे हवामान", weatherDetail: "ऊन • 45%", cardMarket: "बाजार भाव", marketTrend: "▲ 2.4% वाढ", loginTitle: "शेतकरी लॉगिन", signupTitle: "Apex Coders मध्ये सामील व्हा", lblUser: "वापरकर्ता नाव", lblPass: "पासवर्ड", loginSubmit: "डॅशबोर्ड उघडा", signupSubmit: "खाते तयार करा", lblFullName: "पूर्ण नाव", lblState: "राज्य", lblDistrict: "जिल्हा", lblNewUser: "वापरकर्ता नाव", lblNewPass: "पासवर्ड", emiTitle: "शेती कर्ज EMI कॅल्क्युलेटर", lblLoanAmount: "कर्जाची रक्कम (₹)", lblInterestRate: "व्याज दर (% वार्षिक)", lblLoanTenure: "कर्ज कालावधी (वर्षे)", calculateBtn: "EMI मोजा", lblMonthlyEMI: "मासिक EMI", lblTotalAmount: "एकूण देय रक्कम", lblTotalInterest: "एकूण व्याज", lblPrincipal: "मूळ रक्कम", lblInterestPercent: "व्याज %", lossSectionTitle: "पिक नुकसान अंदाज", lossBadge: "AI आधारित", lossInputHeading: "🌾 शेताचा तपशील द्या", lblCropType: "पिकाचा प्रकार", optSelectCrop: "पीक निवडा...", optRice: "भात (धान)", optWheat: "गहू", optMaize: "मका", optSugarcane: "ऊस", optCotton: "कापूस", optSoybean: "सोयाबीन", optTomato: "टोमॅटो", optPotato: "बटाटा", optOnion: "कांदा", optGroundnut: "शेंगदाणे", lblArea: "एकूण क्षेत्र (एकर)", lblExpYield: "अपेक्षित उत्पन्न (क्विंटल/एकर)", lblWeatherCond: "सध्याची हवामान स्थिती", optSelectWeather: "स्थिती निवडा...", optNormal: "सामान्य / उन", optDrought: "दुष्काळ", optFlood: "अतिवृष्टी / पूर", optPest: "कीड / रोग", optStorm: "वादळ / जोरदार वारा", optFrost: "दंव / थंडी", lblGrowthStage: "पिकाची वाढीची अवस्था", optSelectStage: "अवस्था निवडा...", optSowing: "पेरणी / अंकुरण", optVegetative: "वाढीची अवस्था", optFlowering: "फुलोरा", optGrain: "दाणे भरणे / फळधारणा", optHarvest: "कापणीजवळ", lossPredictBtn: "🔍 पिक नुकसान अंदाज करा", lossPlaceholderText: "डाव्या बाजूने तपशील भरा आणि Predict वर क्लिक करा.", lossReportTitle: "📊 नुकसान विश्लेषण अहवाल", lossRiskLabel: "नुकसान धोका पातळी", lblEstLoss: "अंदाजित नुकसान", lblExpOut: "अपेक्षित उत्पन्न", lblActOut: "वास्तविक उत्पन्न (अं.)", lblFinImpact: "आर्थिक परिणाम", lossRecommTitle: "💡 शिफारसी" },
+            ta: { heroTitle: "தொழில்நுட்பத்துடன்<br><span style='color: var(--primary);'>எதிர்கால விவசாயம்</span>", heroSubtitle: "Apex Coders உடன் பயிர்களை கண்காணிக்கவும் மற்றும் விளைச்சலை அதிகரிக்கவும்.", getStarted: "இலவசமாக தொடங்கவும்", login: "உள்நுழைய", signup: "பதிவு செய்யவும்", dashTitle: "பண்ணை சுருக்கம்", cardSoil: "மண் ஈரப்பதம்", cardStatus: "நிலை: சிறப்பானது 🟢", cardWeather: "தற்போதைய வானிலை", weatherDetail: "வெயில் • 45%", cardMarket: "சந்தை விலை", marketTrend: "▲ 2.4% அதிகரிப்பு", loginTitle: "விவசாயி உள்நுழைவு", signupTitle: "Apex Coders இல் சேரவும்", lblUser: "பயனர் பெயர்", lblPass: "கடவுச்சொல்", loginSubmit: "டாஷ்போர்டு திறக்கவும்", signupSubmit: "கணக்கு உருவாக்கவும்", lblFullName: "முழு பெயர்", lblState: "மாநிலம்", lblDistrict: "மாவட்டம்", lblNewUser: "பயனர் பெயர்", lblNewPass: "கடவுச்சொல்", emiTitle: "விவசாய கடன் EMI கணக்கி", lblLoanAmount: "கடன் தொகை (₹)", lblInterestRate: "வட்டி விகிதம் (% ஆண்டுக்கு)", lblLoanTenure: "கடன் காலம் (ஆண்டுகள்)", calculateBtn: "EMI கணக்கிடவும்", lblMonthlyEMI: "மாதாந்திர EMI", lblTotalAmount: "மொத்த செலுத்த வேண்டிய தொகை", lblTotalInterest: "மொத்த வட்டி", lblPrincipal: "அசல் தொகை", lblInterestPercent: "வட்டி %", lossSectionTitle: "பயிர் இழப்பு கணிப்பு", lossBadge: "AI இயக்கம்", lossInputHeading: "🌾 பண்ணை விவரங்களை உள்ளிடவும்", lblCropType: "பயிர் வகை", optSelectCrop: "பயிரை தேர்வு செய்யவும்...", optRice: "நெல்", optWheat: "கோதுமை", optMaize: "மக்காச்சோளம்", optSugarcane: "கரும்பு", optCotton: "பருத்தி", optSoybean: "சோயாபீன்", optTomato: "தக்காளி", optPotato: "உருளைக்கிழங்கு", optOnion: "வெங்காயம்", optGroundnut: "வேர்க்கடலை", lblArea: "மொத்த பரப்பு (ஏக்கர்)", lblExpYield: "எதிர்பார்க்கப்படும் விளைச்சல் (குவிண்டால்/ஏக்கர்)", lblWeatherCond: "தற்போதைய வானிலை நிலை", optSelectWeather: "நிலையை தேர்வு செய்யவும்...", optNormal: "சாதாரண / வெயில்", optDrought: "வறட்சி", optFlood: "அதிக மழை / வெள்ளம்", optPest: "பூச்சி / நோய் தாக்குதல்", optStorm: "புயல் / கடும் காற்று", optFrost: "பனி / குளிர்", lblGrowthStage: "பயிர் வளர்ச்சி நிலை", optSelectStage: "நிலையை தேர்வு செய்யவும்...", optSowing: "விதைப்பு / முளைப்பு", optVegetative: "வளர்ச்சி நிலை", optFlowering: "பூக்கும் நிலை", optGrain: "தானிய நிரப்பல் / பழமாதல்", optHarvest: "அறுவடைக்கு அருகில்", lossPredictBtn: "🔍 பயிர் இழப்பை கணிக்கவும்", lossPlaceholderText: "இடது புறம் விவரங்களை நிரப்பி Predict கிளிக் செய்யவும்.", lossReportTitle: "📊 இழப்பு பகுப்பாய்வு அறிக்கை", lossRiskLabel: "இழப்பு ஆபத்து அளவு", lblEstLoss: "மதிப்பிடப்பட்ட இழப்பு", lblExpOut: "எதிர்பார்க்கப்படும் விளைச்சல்", lblActOut: "உண்மையான விளைச்சல் (மதி.)", lblFinImpact: "நிதி தாக்கம்", lossRecommTitle: "💡 பரிந்துரைகள்" },
+            gu: { heroTitle: "ટેક્નોલોજી સાથે<br><span style='color: var(--primary);'>ભવિષ્યની ખેતી</span>", heroSubtitle: "Apex Coders સાથે પાકો પર નજર રાખો અને ઉત્પાદન વધારો.", getStarted: "મફત શરૂ કરો", login: "લૉગ ઇન", signup: "સાઇન અપ", dashTitle: "ખેતર સારાંશ", cardSoil: "જમીનની ભેજ", cardStatus: "સ્થિતિ: ઉત્તમ 🟢", cardWeather: "વર્તમાન હવામાન", weatherDetail: "તડકો • 45%", cardMarket: "બજાર ભાવ", marketTrend: "▲ 2.4% વધારો", loginTitle: "ખેડૂત લૉગિન", signupTitle: "Apex Coders માં જોડાઓ", lblUser: "વપરાશકર્તા નામ", lblPass: "પાસવર્ડ", loginSubmit: "ડૅશબોર્ડ ખોલો", signupSubmit: "ખાતું બનાવો", lblFullName: "પૂરું નામ", lblState: "રાજ્ય", lblDistrict: "જિલ્લો", lblNewUser: "વપરાશકર્તા નામ", lblNewPass: "પાસવર્ડ", emiTitle: "ખેત ઋણ EMI કૅલ્ક્યુલેટર", lblLoanAmount: "ઋણ રકમ (₹)", lblInterestRate: "વ્યાજ દર (% વાર્ષિક)", lblLoanTenure: "ઋણ અવધિ (વર્ષ)", calculateBtn: "EMI ગણો", lblMonthlyEMI: "માસિક EMI", lblTotalAmount: "કુલ ચૂકવવાની રકમ", lblTotalInterest: "કુલ વ્યાજ", lblPrincipal: "મૂળ રકમ", lblInterestPercent: "વ્યાજ %", lossSectionTitle: "પાક નુકસાન અંદાજ", lossBadge: "AI સંચાલિત", lossInputHeading: "🌾 ખેતરની વિગત દાખલ કરો", lblCropType: "પાકનો પ્રકાર", optSelectCrop: "પાક પસંદ કરો...", optRice: "ડાંગર", optWheat: "ઘઉં", optMaize: "મકાઈ", optSugarcane: "શેરડી", optCotton: "કપાસ", optSoybean: "સોયાબીન", optTomato: "ટામેટા", optPotato: "બટાટા", optOnion: "ડુંગળી", optGroundnut: "મગફળી", lblArea: "કુલ વિસ્તાર (એકર)", lblExpYield: "અપેક્ષિત ઉત્પાદન (ક્વિન્ટલ/એકર)", lblWeatherCond: "વર્તમાન હવામાન સ્થિતિ", optSelectWeather: "સ્થિતિ પસંદ કરો...", optNormal: "સામાન્ય / તડકો", optDrought: "દુષ્કાળ", optFlood: "વધારે વરસાદ / પૂર", optPest: "જીવાત / રોગ હુમલો", optStorm: "વાવાઝોડું / તોફાની પવન", optFrost: "હિમ / ઠંડી", lblGrowthStage: "પાક વૃદ્ધિ તબક્કો", optSelectStage: "તબક્કો પસંદ કરો...", optSowing: "વાવણી / અંકુરણ", optVegetative: "વૃદ્ધિ તબક્કો", optFlowering: "ફૂલ આવવા", optGrain: "દાણા ભરવા / ફળ ધારણ", optHarvest: "લણણી નજીક", lossPredictBtn: "🔍 પાક નુકસાન અંદાજ કરો", lossPlaceholderText: "ડાબી બાજુ ખેતરની વિગત ભરો અને Predict ક્લિક કરો.", lossReportTitle: "📊 નુકસાન વિશ્લેષણ અહેવાલ", lossRiskLabel: "નુકસાન જોખમ સ્તર", lblEstLoss: "અંદાજિત નુકસાન", lblExpOut: "અપેક્ષિત ઉત્પાદન", lblActOut: "વાસ્તવિક ઉત્પાદન (અં.)", lblFinImpact: "નાણાકીય અસર", lossRecommTitle: "💡 ભલામણો" },
+            kn: { heroTitle: "ತಂತ್ರಜ್ಞಾನದೊಂದಿಗೆ<br><span style='color: var(--primary);'>ಭವಿಷ್ಯದ ಕೃಷಿ</span>", heroSubtitle: "Apex Coders ನೊಂದಿಗೆ ಬೆಳೆಗಳನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಿ ಮತ್ತು ಇಳುವರಿ ಹೆಚ್ಚಿಸಿ.", getStarted: "ಉಚಿತವಾಗಿ ಪ್ರಾರಂಭಿಸಿ", login: "ಲಾಗಿನ್", signup: "ಸೈನ್ ಅಪ್", dashTitle: "ಕೃಷಿ ಅವಲೋಕನ", cardSoil: "ಮಣ್ಣಿನ ತೇವ", cardStatus: "ಸ್ಥಿತಿ: ಉತ್ತಮ 🟢", cardWeather: "ಪ್ರಸ್ತುತ ಹವಾಮಾನ", weatherDetail: "ಬಿಸಿಲು • 45%", cardMarket: "ಮಾರುಕಟ್ಟೆ ಬೆಲೆ", marketTrend: "▲ 2.4% ಹೆಚ್ಚಳ", loginTitle: "ರೈತ ಲಾಗಿನ್", signupTitle: "Apex Coders ಗೆ ಸೇರಿ", lblUser: "ಬಳಕೆದಾರ ಹೆಸರು", lblPass: "ಪಾಸ್‌ವರ್ಡ್", loginSubmit: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆಯಿರಿ", signupSubmit: "ಖಾತೆ ರಚಿಸಿ", lblFullName: "ಪೂರ್ಣ ಹೆಸರು", lblState: "ರಾಜ್ಯ", lblDistrict: "ಜಿಲ್ಲೆ", lblNewUser: "ಬಳಕೆದಾರ ಹೆಸರು", lblNewPass: "ಪಾಸ್‌ವರ್ಡ್", emiTitle: "ಕೃಷಿ ಸಾಲ EMI ಕ್ಯಾಲ್ಕುಲೇಟರ್", lblLoanAmount: "ಸಾಲದ ಮೊತ್ತ (₹)", lblInterestRate: "ಬಡ್ಡಿ ದರ (% ವಾರ್ಷಿಕ)", lblLoanTenure: "ಸಾಲದ ಅವಧಿ (ವರ್ಷಗಳು)", calculateBtn: "EMI ಲೆಕ್ಕ ಹಾಕಿ", lblMonthlyEMI: "ತಿಂಗಳ EMI", lblTotalAmount: "ಒಟ್ಟು ಪಾವತಿ ಮೊತ್ತ", lblTotalInterest: "ಒಟ್ಟು ಬಡ್ಡಿ", lblPrincipal: "ಮೂಲ ಮೊತ್ತ", lblInterestPercent: "ಬಡ್ಡಿ %", lossSectionTitle: "ಬೆಳೆ ನಷ್ಟ ಅಂದಾಜು", lossBadge: "AI ಆಧಾರಿತ", lossInputHeading: "🌾 ಕೃಷಿ ವಿವರ ನಮೂದಿಸಿ", lblCropType: "ಬೆಳೆ ವಿಧ", optSelectCrop: "ಬೆಳೆ ಆಯ್ಕೆ ಮಾಡಿ...", optRice: "ಭತ್ತ", optWheat: "ಗೋಧಿ", optMaize: "ಮೆಕ್ಕೆ ಜೋಳ", optSugarcane: "ಕಬ್ಬು", optCotton: "ಹತ್ತಿ", optSoybean: "ಸೋಯಾಬೀನ್", optTomato: "ಟೊಮೇಟೊ", optPotato: "ಆಲೂಗಡ್ಡೆ", optOnion: "ಈರುಳ್ಳಿ", optGroundnut: "ಶೇಂಗಾ", lblArea: "ಒಟ್ಟು ಪ್ರದೇಶ (ಎಕರೆ)", lblExpYield: "ನಿರೀಕ್ಷಿತ ಇಳುವರಿ (ಕ್ವಿಂಟಾಲ್/ಎಕರೆ)", lblWeatherCond: "ಪ್ರಸ್ತುತ ಹವಾಮಾನ ಸ್ಥಿತಿ", optSelectWeather: "ಸ್ಥಿತಿ ಆಯ್ಕೆ ಮಾಡಿ...", optNormal: "ಸಾಮಾನ್ಯ / ಬಿಸಿಲು", optDrought: "ಬರ", optFlood: "ಅಧಿಕ ಮಳೆ / ಪ್ರವಾಹ", optPest: "ಕೀಟ / ರೋಗ ದಾಳಿ", optStorm: "ಚಂಡಮಾರುತ / ತೀವ್ರ ಗಾಳಿ", optFrost: "ಹಿಮ / ಚಳಿ", lblGrowthStage: "ಬೆಳೆ ಬೆಳವಣಿಗೆ ಹಂತ", optSelectStage: "ಹಂತ ಆಯ್ಕೆ ಮಾಡಿ...", optSowing: "ಬಿತ್ತನೆ / ಮೊಳಕೆ", optVegetative: "ಬೆಳವಣಿಗೆ ಹಂತ", optFlowering: "ಹೂ ಬಿಡುವ ಹಂತ", optGrain: "ಕಾಳು ತುಂಬುವ / ಹಣ್ಣಾಗುವ ಹಂತ", optHarvest: "ಕೊಯ್ಲಿಗೆ ಸಮೀಪ", lossPredictBtn: "🔍 ಬೆಳೆ ನಷ್ಟ ಅಂದಾಜು ಮಾಡಿ", lossPlaceholderText: "ಎಡಭಾಗದಲ್ಲಿ ವಿವರ ತುಂಬಿ Predict ಕ್ಲಿಕ್ ಮಾಡಿ.", lossReportTitle: "📊 ನಷ್ಟ ವಿಶ್ಲೇಷಣೆ ವರದಿ", lossRiskLabel: "ನಷ್ಟ ಅಪಾಯ ಮಟ್ಟ", lblEstLoss: "ಅಂದಾಜು ನಷ್ಟ", lblExpOut: "ನಿರೀಕ್ಷಿತ ಇಳುವರಿ", lblActOut: "ನಿಜವಾದ ಇಳುವರಿ (ಅಂ.)", lblFinImpact: "ಆರ್ಥಿಕ ಪರಿಣಾಮ", lossRecommTitle: "💡 ಶಿಫಾರಸುಗಳು" },
+            ml: { heroTitle: "സാങ്കേതികവിദ്യയോടൊപ്പം<br><span style='color: var(--primary);'>ഭാവിയുടെ കൃഷി</span>", heroSubtitle: "Apex Coders ഉപയോഗിച്ച് വിളകൾ നിരീക്ഷിക്കുകയും വിളവ് വർദ്ധിപ്പിക്കുകയും ചെയ്യൂ.", getStarted: "സൗജന്യമായി തുടങ്ങൂ", login: "ലോഗിൻ", signup: "സൈൻ അപ്", dashTitle: "ഫാം അവലോകനം", cardSoil: "മണ്ണിൻ ഈർപ്പം", cardStatus: "നില: ഉത്തമം 🟢", cardWeather: "ഇന്നത്തെ കാലാവസ്ഥ", weatherDetail: "വെയിൽ • 45%", cardMarket: "വിപണി വില", marketTrend: "▲ 2.4% വർദ്ധന", loginTitle: "കർഷക ലോഗിൻ", signupTitle: "Apex Coders ൽ ചേരൂ", lblUser: "ഉപയോക്തൃ നാമം", lblPass: "പാസ്‌വേഡ്", loginSubmit: "ഡാഷ്‌ബോർഡ് തുറക്കൂ", signupSubmit: "അക്കൗണ്ട് ഉണ്ടാക്കൂ", lblFullName: "പൂർണ്ണ നാമം", lblState: "സംസ്ഥാനം", lblDistrict: "ജില്ല", lblNewUser: "ഉപയോക്തൃ നാമം", lblNewPass: "പാസ്‌വേഡ്", emiTitle: "കൃഷി വായ്പ EMI കാൽക്കുലേറ്റർ", lblLoanAmount: "വായ്പ തുക (₹)", lblInterestRate: "പലിശ നിരക്ക് (% വാർഷിക)", lblLoanTenure: "വായ്പ കാലയളവ് (വർഷം)", calculateBtn: "EMI കണക്കാക്കൂ", lblMonthlyEMI: "മാസ EMI", lblTotalAmount: "ആകെ നൽകേണ്ട തുക", lblTotalInterest: "ആകെ പലിശ", lblPrincipal: "മൂലധനം", lblInterestPercent: "പലിശ %", lossSectionTitle: "വിള നഷ്ട പ്രവചനം", lossBadge: "AI അധിഷ്ഠിതം", lossInputHeading: "🌾 ഫാം വിശദാംശങ്ങൾ നൽകൂ", lblCropType: "വിളയുടെ തരം", optSelectCrop: "വിള തിരഞ്ഞെടുക്കൂ...", optRice: "നെൽ (ഉദ്ദ്)", optWheat: "ഗോതമ്പ്", optMaize: "ചോളം", optSugarcane: "കരിമ്പ്", optCotton: "പരുത്തി", optSoybean: "സോയാബീൻ", optTomato: "തക്കാളി", optPotato: "ഉരുളക്കിഴങ്ങ്", optOnion: "ഉള്ളി", optGroundnut: "നിലക്കടല", lblArea: "ആകെ വിസ്തീർണ്ണം (ഏക്കർ)", lblExpYield: "പ്രതീക്ഷിത വിളവ് (ക്വിന്റൽ/ഏക്കർ)", lblWeatherCond: "ഇന്നത്തെ കാലാവസ്ഥ", optSelectWeather: "സ്ഥിതി തിരഞ്ഞെടുക്കൂ...", optNormal: "സാധാരണ / വെയിൽ", optDrought: "വരൾച്ച", optFlood: "അതിവർഷം / വെള്ളപ്പൊക്കം", optPest: "കീടം / രോഗ ആക്രമണം", optStorm: "കൊടുങ്കാറ്റ് / ശക്തമായ കാറ്റ്", optFrost: "മഞ്ഞ് / ശൈത്യം", lblGrowthStage: "വിള വളർച്ചാ ഘട്ടം", optSelectStage: "ഘട്ടം തിരഞ്ഞെടുക്കൂ...", optSowing: "വിത്ത് പാകൽ / മുളക്കൽ", optVegetative: "സസ്യ വളർച്ച", optFlowering: "പൂക്കൽ", optGrain: "ധാന്യം നിറയൽ / ഫലമുണ്ടാകൽ", optHarvest: "വിളവെടുപ്പിന് അടുത്ത്", lossPredictBtn: "🔍 വിള നഷ്ടം പ്രവചിക്കൂ", lossPlaceholderText: "ഇടതുവശത്ത് വിശദാംശങ്ങൾ നൽകി Predict ക്ലിക്ക് ചെയ്യൂ.", lossReportTitle: "📊 നഷ്ട വിശകലന റിപ്പോർട്ട്", lossRiskLabel: "നഷ്ട അപകട നില", lblEstLoss: "ഏകദേശ നഷ്ടം", lblExpOut: "പ്രതീക്ഷിത വിളവ്", lblActOut: "യഥാർത്ഥ വിളവ് (ഏ.)", lblFinImpact: "സാമ്പത്തിക ആഘാതം", lossRecommTitle: "💡 ശുപാർശകൾ" },
+        };
+
+        let currentUsername = null;
+
+        function changeLanguage() {
+            const lang = document.getElementById('langSelector').value;
+            const t = translations[lang];
+            if (!t) return;
+            Object.keys(t).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (id === "heroTitle") el.innerHTML = t[id];
+                    else if (el.tagName === 'OPTION') el.textContent = t[id];
+                    else el.innerText = t[id];
+                }
+            });
+            localStorage.setItem('preferredLanguage', lang);
+
+            // Refresh tips in current language if results are already showing
+            const resultVisible = document.getElementById('lossResultContent').style.display === 'block';
+            if (resultVisible) {
+                const weather = document.getElementById('lossWeather').value;
+                if (weather) {
+                    document.getElementById('lossTipsList').innerHTML = getLossTips(weather).map(t => `<div class="loss-tip-item">✅ ${t}</div>`).join('');
+                }
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebarMenu').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+            document.getElementById('hamburgerMenu').classList.toggle('active');
+        }
+
+        function navigateHome() { toggleSidebar(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function navigateAbout() { toggleSidebar(); document.getElementById('aboutPage').classList.add('active'); }
+        function closeAbout() { document.getElementById('aboutPage').classList.remove('active'); }
+        function navigateChatAI() { toggleSidebar(); openChatModal(); }
+
+        function goBackFromDashboard() {
+            currentUsername = null;
+            document.getElementById('heroSection').style.display = 'flex';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('authBtns').style.display = 'flex';
+            document.getElementById('userNav').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openChatModal() { document.getElementById('chatModal').classList.add('active'); }
+        function closeChatModal() { document.getElementById('chatModal').classList.remove('active'); }
+        function handleChatKeyPress(event) { if (event.key === 'Enter') sendMessage(); }
+        function askSuggestedQuestion(question) { document.getElementById('chatInput').value = question; sendMessage(); }
+        function getCurrentTime() { return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); }
+
+        function addMessage(content, isUser = false) {
+            const container = document.getElementById('chatMessages');
+            const welcomeMsg = container.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+            const div = document.createElement('div');
+            div.className = `message ${isUser ? 'user' : 'bot'}`;
+            div.innerHTML = `<div class="message-avatar">${isUser ? '👤' : '🤖'}</div><div><div class="message-content">${content}</div><div class="message-time">${getCurrentTime()}</div></div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message bot'; div.id = 'typingIndicator';
+            div.innerHTML = `<div class="message-avatar">🤖</div><div class="typing-indicator active"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            container.appendChild(div); container.scrollTop = container.scrollHeight;
+        }
+        function hideTypingIndicator() { const t = document.getElementById('typingIndicator'); if (t) t.remove(); }
+
+        let isChatOnCooldown = false;
+
+        async function sendMessage() {
+            if (isChatOnCooldown) return;
+
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, true); 
+            input.value = '';
+
+            const sendBtn = document.getElementById('chatSendBtn');
+            const originalBtnHTML = '<span>Send</span><span>📤</span>';
+            
+            isChatOnCooldown = true;
+            sendBtn.disabled = true;
+            input.disabled = true;
+            
+            let timeLeft = 5;
+            sendBtn.innerHTML = `<span>Wait ${timeLeft}s</span><span>⏳</span>`;
+            
+            const cooldownTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    sendBtn.innerHTML = `<span>Wait ${timeLeft}s</span><span>⏳</span>`;
+                } else {
+                    clearInterval(cooldownTimer);
+                    isChatOnCooldown = false;
+                    sendBtn.disabled = false;
+                    input.disabled = false;
+                    sendBtn.innerHTML = originalBtnHTML;
+                    input.focus();
+                }
+            }, 1000);
+
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_URL}/chat`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ message, username: currentUsername }) 
+                });
+                const data = await response.json();
+                hideTypingIndicator();
+                addMessage(data.success ? data.response : "Sorry, I'm having trouble responding right now. Please try again.", false);
+            } catch (error) {
+                hideTypingIndicator(); 
+                addMessage(getFallbackResponse(message), false);
+            } 
+        }
+
+        function getFallbackResponse(message) {
+            const msg = message.toLowerCase();
+            if (msg.includes('crop') || msg.includes('plant')) return "For the current season, consider crops like rice, wheat, or vegetables based on your region's climate.";
+            if (msg.includes('soil')) return "To improve soil quality: Add organic matter, practice crop rotation, test soil pH regularly, use cover crops.";
+            if (msg.includes('irrigation') || msg.includes('water')) return "Best irrigation practices include drip irrigation for water efficiency, scheduling based on crop needs, and monitoring soil moisture.";
+            if (msg.includes('price') || msg.includes('market')) return "Market prices fluctuate based on supply, demand, and season. Use the 'Check Crop Prices' button in your dashboard for live data.";
+            if (msg.includes('weather')) return "Weather monitoring is crucial for farming. Follow meteorological department updates and plan activities accordingly.";
+            if (msg.includes('pest') || msg.includes('disease')) return "For pest management: Regular crop inspection, use organic pesticides, practice integrated pest management (IPM).";
+            if (msg.includes('fertilizer')) return "Use fertilizers based on soil test results. Balance NPK according to crop needs.";
+            if (msg.includes('loan') || msg.includes('credit')) return "Several government schemes offer agricultural loans at subsidized rates. Use our EMI calculator to plan your loan.";
+            return "I'm here to help with farming queries! Ask me about crops, irrigation, soil, market prices, weather, or pest control.";
+        }
+
+        function goToHomeForgot() {
+            closeModal('loginModal');
+            setTimeout(() => {
+                document.getElementById('heroSection').style.display = 'flex';
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('authBtns').style.display = 'flex';
+                document.getElementById('userNav').style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 250);
+        }
+
+        const indiaData = {
+            "Odisha": ["Bhubaneswar","Cuttack","Puri","Sambalpur","Balasore","Ganjam","Angul","Bhadrak","Rourkela"],
+            "Maharashtra": ["Mumbai","Pune","Nagpur","Nashik","Thane","Aurangabad"],
+            "Punjab": ["Amritsar","Ludhiana","Jalandhar","Patiala","Bathinda"],
+            "Uttar Pradesh": ["Lucknow","Kanpur","Varanasi","Noida","Agra"],
+            "West Bengal": ["Kolkata","Howrah","Durgapur","Siliguri"],
+            "Tamil Nadu": ["Chennai","Coimbatore","Madurai","Salem"],
+            "Karnataka": ["Bengaluru","Mysuru","Mangaluru"],
+            "Gujarat": ["Ahmedabad","Surat","Vadodara"],
+            "Telangana": ["Hyderabad","Warangal","Nizamabad"],
+            "Kerala": ["Kochi","Thiruvananthapuram","Kozhikode"],
+            "Andhra Pradesh": ["Visakhapatnam","Vijayawada","Guntur"],
+            "Rajasthan": ["Jaipur","Jodhpur","Udaipur"],
+            "Bihar": ["Patna","Gaya","Bhagalpur"],
+            "Madhya Pradesh": ["Bhopal","Indore","Jabalpur"],
+            "Haryana": ["Chandigarh","Faridabad","Gurugram"]
+        };
+
+        window.onload = () => {
+            const stateSel = document.getElementById("signupState");
+            Object.keys(indiaData).sort().forEach(state => stateSel.add(new Option(state, state)));
+            const savedLang = localStorage.getItem('preferredLanguage');
+            if (savedLang) { document.getElementById('langSelector').value = savedLang; changeLanguage(); }
+        };
+
+        function loadDistricts() {
+            const distSel = document.getElementById("signupDistrict"); distSel.length = 1;
+            const state = document.getElementById("signupState").value;
+            if (state && indiaData[state]) indiaData[state].forEach(d => distSel.add(new Option(d, d)));
+        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const form = e.target; 
+            const inputs = form.querySelectorAll('input');
+            const fullName = inputs[0].value; 
+            const username = document.getElementById('signupUser').value;
+            const password = document.getElementById('signupPass').value; 
+            const state = document.getElementById('signupState').value; 
+            const district = document.getElementById('signupDistrict').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/signup`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ fullName, username, password, state, district }) 
+                });
+                const data = await response.json();
+                
+                if (data.success) { 
+                    currentUsername = username; 
+                    showDashboard(username); 
+                    closeModal('signupModal'); 
+                } else { 
+                    alert(data.message || 'Signup failed. Please try again.');
+                }
+            } catch (error) { 
+                console.error("Network Error:", error);
+                alert("Cannot connect to the backend server. Make sure localhost:5000 is running.");
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value;
+            const password = document.getElementById('loginPass').value; 
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ username, password }) 
+                });
+                const data = await response.json();
+                
+                if (data.success) { 
+                    currentUsername = username; 
+                    showDashboard(username); 
+                    closeModal('loginModal'); 
+                } else { 
+                    alert(data.message || 'Invalid credentials.');
+                }
+            } catch (error) { 
+                console.error("Network Error:", error);
+                alert("Cannot connect to the backend server. Make sure localhost:5000 is running.");
+            }
+        }
+
+        function showDashboard(username) {
+            document.getElementById('heroSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('authBtns').style.display = 'none';
+            document.getElementById('userNav').style.display = 'flex';
+            document.getElementById('hamburgerMenu').style.display = 'flex';
+            document.getElementById('usernameDisplay').textContent = username;
+        }
+
+        function logout() {
+            currentUsername = null;
+            document.getElementById('heroSection').style.display = 'flex';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('authBtns').style.display = 'flex';
+            document.getElementById('userNav').style.display = 'none';
+            toggleSidebar();
+        }
+
+        function calculateEMI() {
+            const principal = parseFloat(document.getElementById('loanAmount').value);
+            const annualRate = parseFloat(document.getElementById('interestRate').value);
+            const years = parseFloat(document.getElementById('loanTenure').value);
+            if (!principal || !annualRate || !years) { alert('Please fill in all fields.'); return; }
+            const r = annualRate / 12 / 100; const n = years * 12;
+            const emi = (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const total = emi * n; const interest = total - principal;
+            const fmt = v => '₹' + v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('monthlyEMI').textContent = fmt(emi);
+            document.getElementById('totalAmount').textContent = fmt(total);
+            document.getElementById('totalInterest').textContent = fmt(interest);
+            document.getElementById('principalAmount').textContent = fmt(principal);
+            document.getElementById('interestPercent').textContent = ((interest / total) * 100).toFixed(2) + '%';
+            document.getElementById('emiResults').style.opacity = '1';
+        }
+    </script>
+</body>
+</html>
